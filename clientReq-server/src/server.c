@@ -7,6 +7,7 @@
 
 #include "../inc/errExit.h"
 #include "../inc/server.h"
+#include "../inc/clientReq.h"
 
 int main (int argc, char *argv[]) {
     // Path to FIFOSERVER location in filesystem
@@ -24,8 +25,28 @@ int main (int argc, char *argv[]) {
     FIFOSERVER = open(path2ServerFIFO, O_RDWR);
 
     // ========== OPERATION SECTION ==========
+    // Request read from FIFO
+    Request_t *request;
+    
+    // Reads the request from FIFOSERVER
+    if(read(FIFOSERVER, request, sizeof(Request_t *)) == -1) {
+        errExit("read from FIFOSERVER failed");
+    }
+
+    // Response containing the user key
+    Response_t *user_key;
+
     // Generate user_key
-    Response_t user_key = generate_key(/* Servzizo richiesto letto da FIFOCLIENT */);
+    if(strcmp(request -> service, "Stampa") >= 0 || strcmp(request -> service, "Salva") >= 0 || strcmp(request -> service, "Invia") >= 0) {
+        user_key = generate_key(request -> service);
+    }
+
+    if(user_key != NULL) {
+        // Writes the response on the FIFO
+        if(write(FIFOSERVER, user_key, sizeof(Response_t *)) == 0) {
+            errExit("write on FIFOSERVER failed");
+        }
+    }
     // =======================================
 
     // Checks on errors closing FIFOSERVER file descriptor

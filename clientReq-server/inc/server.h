@@ -15,7 +15,7 @@ typedef struct Response_s {
 } Response_t;
 
 // Generates a user_key
-Response_t generate_key(char service[]) {
+Response_t *generate_key(char service[]) {
     Response_t result;
 
     // Init random seed
@@ -35,7 +35,7 @@ Response_t generate_key(char service[]) {
         strcpy(result.user_key_service, "snd");
     }
 
-    return result;
+    return &result;
 }
 
 // Function to print user_key (DEBUG)
