@@ -24,7 +24,24 @@ int main (int argc, char *argv[]) {
     // Opens FIFOSERVER and places it in FDT
     FIFOSERVER = open(path2ServerFIFO, O_RDWR);
 
+    // Signal set
+    sigset_t noSIGTERMSet;
+
+    // Fill the signal set
+    sigfillset(&noSIGTERMSet);
+
+    // Deletes SIGTERM from mySet
+    sigdelset(&noSIGTERMSet, SIGTERM);
+
+    // Blocks all signals but SIGTERM
+    sigprocmask(SIG_SETMASK, &noSIGTERMSet, NULL);
+
     // ========== OPERATION SECTION ==========
+    // sigHandler as handler for SIGTERM
+    if(signal(SIGTERM, sigHandler) == SIG_ERR) {
+        errExit("SIGTERM caught. Closing!");
+    }
+
     // Request read from FIFO
     Request_t *request;
     

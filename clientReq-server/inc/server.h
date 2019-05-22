@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+#include <signal.h>
 
 // Struct that defines server's response, using typedef for clean code 
 typedef struct Response_s {
@@ -45,6 +46,11 @@ void print_key(Response_t *response) {
     }
 
     printf("%s\n", response -> user_key_service);
+}
+
+// Handles signal 
+void sigHandler(int sig) {
+    return;
 }
 
 #endif

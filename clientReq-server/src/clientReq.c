@@ -28,17 +28,21 @@ int main (int argc, char *argv[]) {
     FIFOCLIENT = open(path2ClientFIFO, O_RDONLY);
 
     // ========== KEY GENERATION ==========
-    printf("■■■■■■■■■■■■■■■  Welcome!  ■■■■■■■■■■■■■■■\n\nServices:\n1) Stampa\n2) Salva\n3) Invia\n\nID: ");
-    scanf("%255s", id);
+    do {
+        printf("■■■■■■■■■■■■■■■  Welcome!  ■■■■■■■■■■■■■■■\n\nServices:\n1) Stampa\n2) Salva\n3) Invia\n\nID: ");
+        scanf("%255s", id);
 
-    printf("Service: ");
-    scanf("%6s", service);
+        printf("Service: ");
+        scanf("%6s", service);
+    } while(validate_service(service) == -1);
 
     Request_t *request;
 
+    // Assigns the values to the Request
     strcpy(request -> id, id);
     strcpy(request -> service, service);
 
+    // Writes the request on the FIFOCLIENT
     if(write(FIFOCLIENT, request, sizeof(Request_t *)) != sizeof(request)) {
         errExit("write on FIFOCLIENT failed");
     }
@@ -47,10 +51,12 @@ int main (int argc, char *argv[]) {
 
     Response_t *user_key;
 
+    // Reads the resposnse from the FIFOCLIENT
     if(read(FIFOCLIENT, user_key, sizeof(Response_t *)) == -1) {
         errExit("read from FIFOCLIENT failed");
     }
 
+    // Prints the user_key
     printf("Key: ");
     print_key(user_key);
     printf("\n");
