@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -7,6 +8,7 @@
 
 #include "../inc/errExit.h"
 #include "../inc/clientReq.h"
+#include "../inc/server.h"
 
 int main (int argc, char *argv[]) {
     char id[256], service[7];
@@ -25,15 +27,34 @@ int main (int argc, char *argv[]) {
     // Opens FIFOCLIENT and places it into FDT
     FIFOCLIENT = open(path2ClientFIFO, O_RDONLY);
 
-    // ========== USER INPUT SECTION ==========
+    // ========== KEY GENERATION ==========
     printf("■■■■■■■■■■■■■■■  Welcome!  ■■■■■■■■■■■■■■■\n\nServices:\n1) Stampa\n2) Salva\n3) Invia\n\nID: ");
     scanf("%255s", id);
 
     printf("Service: ");
     scanf("%6s", service);
-    // ========================================
 
-    // Placeholder stampa server-key
+    Request_t *request;
+
+    strcpy(request -> id, id);
+    strcpy(request -> service, service);
+
+    if(write(FIFOCLIENT, request, sizeof(Request_t *)) != sizeof(request)) {
+        errExit("write on FIFOCLIENT failed");
+    }
+
+    sleep(3);
+
+    Response_t *user_key;
+
+    if(read(FIFOCLIENT, user_key, sizeof(Response_t *)) == -1) {
+        errExit("read from FIFOCLIENT failed");
+    }
+
+    printf("Key: ");
+    print_key(user_key);
+    printf("\n");
+    // ========================================
 
     // Checks on errors closing FIFOSERVER file descriptor
     if(close(FIFOCLIENT) == -1) {

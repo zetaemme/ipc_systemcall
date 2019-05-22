@@ -38,8 +38,8 @@ Response_t *generate_key(char service[]) {
     return &result;
 }
 
-// Function to print user_key (DEBUG)
-void __print_key(Response_t *response) {
+// Function to print user_key
+void print_key(Response_t *response) {
     for(int i = 0; i < 4; i++) {
         printf("%i", response -> user_key_numeric[i]);
     }
