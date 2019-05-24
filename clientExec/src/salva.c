@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "../../clientReq-server/inc/errExit.h"
+#include "../../utils/include/errExit.h"
 
 int main (int argc, char *argv[]) { 
     // Generate the new file's filename
@@ -16,7 +16,7 @@ int main (int argc, char *argv[]) {
     int file = open(filename, O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
 
     if(file == -1) {
-        errExit("open failed");
+        errExit("<Exec> open failed");
     }
 
     // Buffer that contains the string and while loop index
@@ -27,7 +27,7 @@ int main (int argc, char *argv[]) {
         strcpy(buffer, argv[i]);
 
         if(write(file, buffer, sizeof(argv[i]))) {
-            errExit("write failed");
+            errExit("<Exec> write failed");
         }
 
         i++;

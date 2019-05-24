@@ -8,7 +8,7 @@ int main (int argc, char *argv[]) {
     user_key = argv[2];
     args = argv[3];
 
-    // Accesso a segmento di Shared Memory e validazione dati (TODO)
+    // TODO Accesso a segmento di Shared Memory e validazione dati
 
     // Esegui il servizio richiesto tramite syscall exec
 
