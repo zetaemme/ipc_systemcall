@@ -12,9 +12,9 @@
 #include <sys/shm.h>
 #include <sys/time.h>
 
-#include "../inc/errExit.h"
-#include "../inc/server.h"
-#include "../inc/clientReq.h"
+#include "../../utils/include/errExit.h"
+#include "../include/server.h"
+#include "../include/clientReq.h"
 
 int alarm_stop = false;
 
@@ -77,20 +77,7 @@ int main (int argc, char *argv[]) {
             errExit("<KeyManager> shmat failed");
         }
 
-        if(signal(SIGALRM, on_alarm) == SIG_ERR) {
-            errExit("<KeyManager> signal SIGALRM failed");
-        }
-
-        alarm(30);
-
-        // Execute this code each 30 seconds
-        while(true) {
-            struct timeval current_time;
-
-            gettimeofday(&current_time, NULL);
-
-            // TODO Finire operazione di pulizia keys   
-        }
+        // TODO Finire processo KeyManager
     }
 
     // ========== SERVER OPERATION SECTION ==========
@@ -108,7 +95,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Response containing the user key
-    Response_t *user_key = NULL;
+    Response_t *user_key;
 
     // Generate user_key
     if(strcmp(request -> service, "Stampa") >= 0 || strcmp(request -> service, "Salva") >= 0 || strcmp(request -> service, "Invia") >= 0) {
@@ -162,9 +149,9 @@ void generate_key(Request_t *request, Response_t *response) {
     }
 
     // Checks for service type and assigns service part of user_key
-    if(strcmp(request -> service, "Stampa") >= 0) {
+    if(strcmp(request -> service, "Stampa") == 0) {
         strcpy(response -> user_key_service, "prt");
-    } else if(strcmp(request -> service, "Salva") >= 0) {
+    } else if(strcmp(request -> service, "Salva") == 0) {
         strcpy(response -> user_key_service, "sav");
     } else {
         strcpy(response -> user_key_service, "snd");
@@ -188,13 +175,4 @@ void sigHandler(int sig) {
 // Get current timestamp
 void get_timestamp(Data_t *user_data) {
     gettimeofday(&user_data -> timestamp, NULL);
-}
-
-// 30 seconds timer
-void on_alarm(int sig) {
-    if(alarm_stop) {
-        return;
-    } else {
-        alarm(30);
-    }
 }
