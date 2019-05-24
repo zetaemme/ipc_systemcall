@@ -13,19 +13,31 @@
 int main (int argc, char *argv[]) {
     char id[256], service[7];
 
-    // Path to FIFOCLIENT location in filesystem
-    char *path2ClientFIFO;
+    // Path to FIFOCLIENT/FIFOSERVER location in filesystem
+    char *path2ClientFIFO = "FIFOs/FIFOCLIENT";
+    char *path2ServerFIFO = "FIFOs/FIFOSERVER";
 
     // FIFOCLIENT file descriptor
     int FIFOCLIENT;
 
+    // FIFOSERVER file descriptor
+    int FIFOSERVER;
+
     // Checks for error making FIFOCLIENT
-    if(mkfifo(path2ClientFIFO, S_IRUSR) == -1) {
-        errExit("mkfifo FIFOCLIENT failed");
+    if(mkfifo(path2ClientFIFO, S_IRUSR | S_IWUSR) == -1) {
+        errExit("<Client Request> mkfifo FIFOCLIENT failed");
     }
 
-    // Opens FIFOCLIENT and places it into FDT
+    // Opens FIFOCLIENT/FIFOSERVER and place them into FDT
     FIFOCLIENT = open(path2ClientFIFO, O_RDONLY);
+    FIFOSERVER = open(path2ServerFIFO, O_WRONLY);
+
+    // Checks on errors opning FIFOCLIENT/FIFOSERVER
+    if(FIFOSERVER == -1) {
+        errExit("<Client Request> open FIFOSERVER failed");
+    } else if(FIFOCLIENT == -1) {
+        errExit("<Client Request> open FIFOCLIENT failed");
+    }
 
     // ========== KEY GENERATION ==========
     do {
@@ -43,8 +55,8 @@ int main (int argc, char *argv[]) {
     strcpy(request -> service, service);
 
     // Writes the request on the FIFOCLIENT
-    if(write(FIFOCLIENT, request, sizeof(Request_t *)) != sizeof(request)) {
-        errExit("write on FIFOCLIENT failed");
+    if(write(FIFOSERVER, request, sizeof(Request_t *)) != sizeof(request)) {
+        errExit("<Client Request> write on FIFOSERVER failed");
     }
 
     sleep(3);
@@ -53,7 +65,7 @@ int main (int argc, char *argv[]) {
 
     // Reads the resposnse from the FIFOCLIENT
     if(read(FIFOCLIENT, user_key, sizeof(Response_t *)) == -1) {
-        errExit("read from FIFOCLIENT failed");
+        errExit("<Client Request> read from FIFOCLIENT failed");
     }
 
     // Prints the user_key
@@ -62,15 +74,28 @@ int main (int argc, char *argv[]) {
     printf("\n");
     // ========================================
 
-    // Checks on errors closing FIFOSERVER file descriptor
+    // Checks on errors closing FIFOCLIENT file descriptor
     if(close(FIFOCLIENT) == -1) {
-        errExit("close FIFOCLIENT failed");
+        errExit("<Client Request> close FIFOCLIENT failed");
+    }
+
+    // Checks on errors closing FIFOSERVER file descriptor
+    if(close(FIFOSERVER) == -1) {
+        errExit("<Client Request> close FIFOSERVER error");
     }
 
     // Checks fo errors unlinking the FIFO
     if(unlink(path2ClientFIFO) == -1) {
-        errExit("unlink FIFOCLIENT failed");
+        errExit("<Client Request> unlink FIFOCLIENT failed");
     }
 
     return 0;
+}
+
+int validate_service(char service[]) {
+    if(strcmp(service, "Stampa") < 0 || strcmp(service, "Salva") < 0 || strcmp(service, "Invia") < 0) {
+        return -1;
+    }
+
+    return 1;
 }

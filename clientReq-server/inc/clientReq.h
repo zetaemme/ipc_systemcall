@@ -8,12 +8,6 @@ typedef struct Request_s {
     char service[7];
 } Request_t;
 
-int validate_service(char service[]) {
-    if(strcmp(service, "Stampa") < 0 || strcmp(service, "Salva") < 0 || strcmp(service, "Invia") < 0) {
-        return -1;
-    }
-
-    return 1;
-}
+int validate_service(char service[]);
 
 #endif
