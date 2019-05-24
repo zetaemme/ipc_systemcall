@@ -19,7 +19,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Gets the message queue
-    int msqid = msgget(msgKey, S_IRUSR | S_IWUSR );
+    int msqid = msgget(msgKey, S_IRUSR | S_IWUSR);
 
     int i = 2;
     char *string2send = "";

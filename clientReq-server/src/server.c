@@ -77,7 +77,11 @@ int main (int argc, char *argv[]) {
             errExit("<KeyManager> shmat failed");
         }
 
+<<<<<<< HEAD
         // TODO Finire processo KeyManager
+=======
+
+>>>>>>> d8bf1f4dd439f70747f255869b2d01fc82329bbd
     }
 
     // ========== SERVER OPERATION SECTION ==========
