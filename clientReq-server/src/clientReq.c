@@ -6,9 +6,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "../inc/errExit.h"
-#include "../inc/clientReq.h"
-#include "../inc/server.h"
+#include "../../utils/include/errExit.h"
+#include "../include/clientReq.h"
+#include "../include/server.h"
 
 int main (int argc, char *argv[]) {
     char id[256], service[7];

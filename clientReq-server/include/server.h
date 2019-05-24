@@ -27,6 +27,5 @@ void generate_key(Request_t *request, Response_t *response);
 void print_key(Response_t *response);
 void sigHandler(int sig);
 void get_timestamp(Data_t *user_data);
-void on_alarm(int sig);
 
 #endif

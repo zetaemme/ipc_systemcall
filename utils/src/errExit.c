@@ -1,4 +1,4 @@
-#include "../inc/errExit.h"
+#include "../include/errExit.h"
 
 #include <stdio.h>
 #include <errno.h>
