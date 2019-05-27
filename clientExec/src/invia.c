@@ -5,6 +5,7 @@
 #include <sys/msg.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include <sys/stat.h>
 
 #include "../../utils/include/errExit.h"
 #include "../include/invia.h"

@@ -16,8 +16,6 @@
 #include "../include/server.h"
 #include "../include/clientReq.h"
 
-int alarm_stop = false;
-
 int main (int argc, char *argv[]) {
     // Path to FIFOSERVER/FIFOCLIENT location in filesystem
     char *path2ServerFIFO = "FIFOs/FIFOSERVER";
@@ -83,7 +81,7 @@ int main (int argc, char *argv[]) {
     // ========== SERVER OPERATION SECTION ==========
     // sigHandler as handler for SIGTERM
     if(signal(SIGTERM, sigHandler) == SIG_ERR) {
-        errExit("<Server> SIGTERM caught. Closing!");
+        errExit("<Server> signal failed");
     }
 
     // Request read from FIFO
