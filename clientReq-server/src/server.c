@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <signal.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -45,7 +46,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Creates the shared memory
-    int shmid = shmget(shmKey, sizeof(Data_t *) * 100, IPC_CREAT | S_IRUSR | S_IWUSR);
+    int shmid = shmget(shmKey, sizeof(Node_t *) * 100, IPC_CREAT | S_IRUSR | S_IWUSR);
 
     // Checks if the shared memory was successfully created
     if(shmid == -1) {
@@ -66,17 +67,6 @@ int main (int argc, char *argv[]) {
 
     // Creates the child process KeyManager
     pid_t key_manager = fork();
-
-    // Code executed by KeyManager
-    if(key_manager == 0) {
-        void *attach = shmat(shmid, NULL, 0);
-
-        if(attach == (void *) -1) {
-            errExit("<KeyManager> shmat failed");
-        }
-
-        // TODO Finire processo KeyManager
-    }
 
     // ========== SERVER OPERATION SECTION ==========
     // sigHandler as handler for SIGTERM
@@ -99,6 +89,23 @@ int main (int argc, char *argv[]) {
     if(strcmp(request -> service, "Stampa") >= 0 || strcmp(request -> service, "Salva") >= 0 || strcmp(request -> service, "Invia") >= 0) {
         generate_key(request, user_key);
     }
+
+    // ================= KEYMANAGER ===============
+    if(key_manager == 0) {
+        // Attach the shared memory segment
+        List_t *attach_shm_list = (List_t *) shmat(shmid, NULL, 0);
+
+        if(attach_shm_list == (List_t *) -1) {
+            errExit("<KeyMamager> shmat failed");
+        }
+
+        // Gets the now-time
+        struct timeval current;
+        gettimeofday(&current, NULL);
+
+        
+    }
+    // =============================================
 
     if(user_key != NULL) {
         // Writes the response on the FIFO
@@ -170,7 +177,79 @@ void sigHandler(int sig) {
     printf("SIGTERM occourred");
 }
 
-// Get current timestamp
-void get_timestamp(Data_t *user_data) {
-    gettimeofday(&user_data -> timestamp, NULL);
+// Checks if five minutes difference sussist between 2 timestamps
+int check_five_min_diff(struct timeval *current, struct timeval *data_timestamp) {
+    if((current -> tv_sec) - (data_timestamp -> tv_sec) >= 300) {
+        return 1;
+    }
+
+    return 0;
+}
+
+// Allocates the shared memory linked list
+List_t *allocate_shmem_list(Node_t *head) {
+    List_t *new_list = (List_t *) malloc(sizeof(List_t *));
+    new_list -> head = head;
+
+    return new_list;
+}
+
+// Instert a new node in the data list
+void insert_list(List_t * list, Node_t * node){
+    Node_t * current = list -> head;
+
+    if(current == NULL){
+        list -> head = node;
+    }
+    else{
+        while(current -> next != NULL){
+            current = current -> next;
+        }
+
+        current -> next = node;
+        current -> next -> value = node -> value;
+        current -> next -> next = NULL;
+    }
+}
+
+//Delete a node from the data list
+void delete_from_list(List_t *list, Node_t *node){
+    Node_t * current = list -> head;
+    Node_t * previous = NULL;
+    
+    if(current -> next == NULL && check_eq_data(current -> value, node -> value)) {
+        current == NULL;
+    } else {
+        while(current -> next != NULL) {
+            if(check_eq_data(current -> value, node -> value)){
+                previous -> next = current -> next;
+                current -> next = NULL;
+            } else {
+                current = current -> next;
+            }
+        }
+    }
+}
+
+// Compare two different data
+int check_eq_data(Data_t *data1, Data_t *data2){
+    if(strcmp(data1 -> id, data2 -> id) == 0 && 
+        strcmp(userkey_to_string(data1 -> user_key), userkey_to_string(data2 -> user_key)) == 0 && 
+        data1 -> timestamp.tv_sec == data2 -> timestamp.tv_sec
+      ){
+
+        return 1;
+    }
+
+    return 0;
+}
+
+// Coverts *user_key to a string
+char * userkey_to_string(Response_t *user_key){ 
+    char numeric[5];
+    int tmp = atoi(user_key -> user_key_numeric);
+
+    sprintf(numeric, "%d", tmp);
+
+    return strcat(numeric, user_key -> user_key_service);
 }
