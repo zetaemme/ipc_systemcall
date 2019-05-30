@@ -16,6 +16,7 @@
 #include "../../utils/include/errExit.h"
 #include "../include/server.h"
 #include "../include/clientReq.h"
+#include "../../utils/include/list_utils.h"
 
 int main (int argc, char *argv[]) {
     // Path to FIFOSERVER/FIFOCLIENT location in filesystem
@@ -93,17 +94,43 @@ int main (int argc, char *argv[]) {
     // ================= KEYMANAGER ===============
     if(key_manager == 0) {
         // Attach the shared memory segment
-        List_t *attach_shm_list = (List_t *) shmat(shmid, NULL, 0);
+        List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
 
-        if(attach_shm_list == (List_t *) -1) {
+        if(attached_shm_list == (List_t *) -1) {
             errExit("<KeyMamager> shmat failed");
         }
 
-        // Gets the now-time
-        struct timeval current;
-        gettimeofday(&current, NULL);
+        // Now-time value
+        struct timeval current_time;
 
-        
+        // Current node of the list
+        Node_t *current_node = attached_shm_list -> head;
+
+        // This loop executes each 30 seconds
+        while(1) {
+            // Gets the current time
+            gettimeofday(&current_time, NULL);
+
+            while(current_node -> next != NULL) {
+                if(check_five_min_diff(&current_time, &(current_node -> value) -> timestamp)) {
+                    delete_from_list(attached_shm_list, current_node);
+
+                    current_node = current_node -> next;
+                } else {
+                    current_node = current_node -> next;
+                }
+            }
+
+            // Sleep for 30 seconds
+            sleep(30);
+
+            // Reset the current node to the head of the list
+            current_node = attached_shm_list -> head;
+
+            if(signal(SIGTERM, sigHandler) == SIG_ERR) {
+                errExit("<KeyManager> signal failed");
+            }
+        }
     }
     // =============================================
 
@@ -186,53 +213,8 @@ int check_five_min_diff(struct timeval *current, struct timeval *data_timestamp)
     return 0;
 }
 
-// Allocates the shared memory linked list
-List_t *allocate_shmem_list(Node_t *head) {
-    List_t *new_list = (List_t *) malloc(sizeof(List_t *));
-    new_list -> head = head;
-
-    return new_list;
-}
-
-// Instert a new node in the data list
-void insert_list(List_t * list, Node_t * node){
-    Node_t * current = list -> head;
-
-    if(current == NULL){
-        list -> head = node;
-    }
-    else{
-        while(current -> next != NULL){
-            current = current -> next;
-        }
-
-        current -> next = node;
-        current -> next -> value = node -> value;
-        current -> next -> next = NULL;
-    }
-}
-
-//Delete a node from the data list
-void delete_from_list(List_t *list, Node_t *node){
-    Node_t * current = list -> head;
-    Node_t * previous = NULL;
-    
-    if(current -> next == NULL && check_eq_data(current -> value, node -> value)) {
-        current == NULL;
-    } else {
-        while(current -> next != NULL) {
-            if(check_eq_data(current -> value, node -> value)){
-                previous -> next = current -> next;
-                current -> next = NULL;
-            } else {
-                current = current -> next;
-            }
-        }
-    }
-}
-
 // Compare two different data
-int check_eq_data(Data_t *data1, Data_t *data2){
+int check_eq_data(Data_t *data1, Data_t *data2) {
     if(strcmp(data1 -> id, data2 -> id) == 0 && 
         strcmp(userkey_to_string(data1 -> user_key), userkey_to_string(data2 -> user_key)) == 0 && 
         data1 -> timestamp.tv_sec == data2 -> timestamp.tv_sec
@@ -245,7 +227,7 @@ int check_eq_data(Data_t *data1, Data_t *data2){
 }
 
 // Coverts *user_key to a string
-char * userkey_to_string(Response_t *user_key){ 
+char *userkey_to_string(Response_t *user_key) { 
     char numeric[5];
     int tmp = atoi(user_key -> user_key_numeric);
 

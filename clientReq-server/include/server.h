@@ -23,20 +23,11 @@ typedef struct Data_s {
     struct timeval timestamp;
 } Data_t;
 
-// Nodes of the shared memory list
-typedef struct Node_s {
-    Data_t *value;
-    struct Node_s *next;
-} Node_t;
-
-// Shared memory list
-typedef struct List_s {
-    Node_t *head;
-} List_t;
-
 void generate_key(Request_t *request, Response_t *response);
 void print_key(Response_t *response);
 void sigHandler(int sig);
 int check_five_min_diff(struct timeval *current, struct timeval *data_timestamp);
+int check_eq_data(Data_t *data1, Data_t *data2);
+char *userkey_to_string(Response_t *user_key);
 
 #endif
