@@ -2,6 +2,11 @@
 #include <stdio.h>
 
 int main (int argc, char *argv[]) {
-    printf("Hi, I'm Stampa program!\n");
+    int i = 3;
+
+    while(argv[i] != NULL) {
+        printf("%s ", argv[i]);
+    }
+
     return 0;
 }
