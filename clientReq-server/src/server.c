@@ -39,7 +39,7 @@ int main (int argc, char *argv[]) {
     FIFOCLIENT = open(path2ClientFIFO, O_WRONLY);
 
     // Creates the Shared Memory key
-    key_t shmKey = ftok(IPC_PRIVATE, 's');
+    key_t shmKey = ftok("./server.c", 's');
 
     // Checks if ftok succesfully created a key
     if(shmKey == -1) {
@@ -48,7 +48,7 @@ int main (int argc, char *argv[]) {
 
     // Creates the shared memory
     int shmid = shmget(shmKey, sizeof(Node_t *) * 100, IPC_CREAT | S_IRUSR | S_IWUSR);
-
+  
     // Checks if the shared memory was successfully created
     if(shmid == -1) {
         errExit("<Server> shmget failed");
@@ -150,6 +150,11 @@ int main (int argc, char *argv[]) {
     // Deletes the shared memory
     if(shmctl(shmid, IPC_RMID, NULL) == -1) {
         errExit("<Server> shmctl IPC_RMID failed");
+    }
+
+    // Remove the file that contains the shmid
+    if(remove("../../shm_id.txt") == -1) {
+        errExit("<Server> remove failed");
     }
 
     // Checks on errors closing FIFOSERVER file descriptor

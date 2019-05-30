@@ -2,8 +2,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/ipc.h>
+#include <sys/stat.h>
 
+#include "../../utils/include/list_utils.h"
 #include "../include/clientExec.h"
+#include "../../clientReq-server/include/server.h"
 #include "../../utils/include/errExit.h"
 
 int main (int argc, char *argv[]) {
@@ -25,8 +29,26 @@ int main (int argc, char *argv[]) {
         j++;
     }
 
+    // Gets the shared memory id
+    key_t shmKey = ftok("../../clientReq-server/src/server.c", 's'); 
+    int shmid = shmget(shmKey, sizeof(Node_t *) * 100, S_IRUSR | S_IWUSR);
+
+    // Attach the shared memory to the linked list
+    List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
+
+    Node_t *current = attached_shm_list -> head;
+
+    int validity_flag = 0;
+
+    // Checks for user_key validity
+    while(current -> next != NULL) {
+        if(strcmp(userkey_to_string(current -> value -> user_key), argv[2]) == 0) {
+            validity_flag = 1;
+        }
+    } 
+
     // Simula validazione user_key(argv[2])
-    if(strcmp(argv[2], "1234") == 0) {
+    if(validity_flag == 1) {
         if(strcmp(service, "prt") == 0) {
             if(execl("./stampa.c", *args, (char *) NULL) == -1) {
                 errExit("<Exec> failed to execute 'Print'");
