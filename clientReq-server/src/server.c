@@ -76,7 +76,20 @@ int main (int argc, char *argv[]) {
     }
 
     // Request read from FIFO
-    Request_t *request;
+    Request_t *request;4];
+    str_slice(argv[1], service, 4, 8);
+
+    // Creating a subset array containing the arguments for the execl syscall
+    char **args = (char **) malloc((argc - 3) * sizeof(char));
+
+    int j = 0;
+    for(int i = 3; i < argc; i++) {
+        strcpy(args[j], argv[i]);
+
+        j++;
+    }
+
+    // Gets the shared memory id
     
     // Reads the request from FIFOSERVER
     if(read(FIFOSERVER, request, sizeof(Request_t *)) == -1) {
@@ -111,6 +124,8 @@ int main (int argc, char *argv[]) {
             // Gets the current time
             gettimeofday(&current_time, NULL);
 
+            // FRA TE SPARO
+
             while(current_node -> next != NULL) {
                 if(check_five_min_diff(&current_time, &(current_node -> value) -> timestamp)) {
                     delete_from_list(attached_shm_list, current_node);
@@ -120,6 +135,8 @@ int main (int argc, char *argv[]) {
                     current_node = current_node -> next;
                 }
             }
+
+            // FA NA CANNA
 
             // Sleep for 30 seconds
             sleep(30);
