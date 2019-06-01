@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <signal.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -15,8 +16,7 @@
 #include "../../utils/include/errExit.h"
 #include "../include/server.h"
 #include "../include/clientReq.h"
-
-int alarm_stop = false;
+#include "../../utils/include/list_utils.h"
 
 int main (int argc, char *argv[]) {
     // Path to FIFOSERVER/FIFOCLIENT location in filesystem
@@ -39,7 +39,7 @@ int main (int argc, char *argv[]) {
     FIFOCLIENT = open(path2ClientFIFO, O_WRONLY);
 
     // Creates the Shared Memory key
-    key_t shmKey = ftok(IPC_PRIVATE, 's');
+    key_t shmKey = ftok("./server.c", 's');
 
     // Checks if ftok succesfully created a key
     if(shmKey == -1) {
@@ -47,8 +47,8 @@ int main (int argc, char *argv[]) {
     }
 
     // Creates the shared memory
-    int shmid = shmget(shmKey, sizeof(Data_t *) * 100, IPC_CREAT | S_IRUSR | S_IWUSR);
-
+    int shmid = shmget(shmKey, sizeof(Node_t *) * 100, IPC_CREAT | S_IRUSR | S_IWUSR);
+  
     // Checks if the shared memory was successfully created
     if(shmid == -1) {
         errExit("<Server> shmget failed");
@@ -69,21 +69,10 @@ int main (int argc, char *argv[]) {
     // Creates the child process KeyManager
     pid_t key_manager = fork();
 
-    // Code executed by KeyManager
-    if(key_manager == 0) {
-        void *attach = shmat(shmid, NULL, 0);
-
-        if(attach == (void *) -1) {
-            errExit("<KeyManager> shmat failed");
-        }
-
-        // TODO Finire processo KeyManager
-    }
-
     // ========== SERVER OPERATION SECTION ==========
     // sigHandler as handler for SIGTERM
     if(signal(SIGTERM, sigHandler) == SIG_ERR) {
-        errExit("<Server> SIGTERM caught. Closing!");
+        errExit("<Server> signal failed");
     }
 
     // Request read from FIFO
@@ -102,7 +91,64 @@ int main (int argc, char *argv[]) {
         generate_key(request, user_key);
     }
 
+    // ================= KEYMANAGER ===============
+    if(key_manager == 0) {
+        // Attach the shared memory segment
+        List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
+
+        if(attached_shm_list == (List_t *) -1) {
+            errExit("<KeyMamager> shmat failed");
+        }
+
+        // Now-time value
+        struct timeval current_time;
+
+        // Current node of the list
+        Node_t *current_node = attached_shm_list -> head;
+
+        // This loop executes each 30 seconds
+        while(1) {
+            // Gets the current time
+            gettimeofday(&current_time, NULL);
+
+            // FRA TE SPARO
+
+            while(current_node -> next != NULL) {
+                if(check_five_min_diff(&current_time, &(current_node -> value) -> timestamp)) {
+                    delete_from_list(attached_shm_list, current_node);
+
+                    current_node = current_node -> next;
+                } else {
+                    current_node = current_node -> next;
+                }
+            }
+
+            // FA NA CANNA
+
+            // Sleep for 30 seconds
+            sleep(30);
+
+            // Reset the current node to the head of the list
+            current_node = attached_shm_list -> head;
+
+            if(signal(SIGTERM, sigHandler) == SIG_ERR) {
+                errExit("<KeyManager> signal failed");
+            }
+        }
+    }
+    // =============================================
+
     if(user_key != NULL) {
+        // Attach the server to the Shared Memory
+        List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
+        
+        if(attached_shm_list == (List_t *) -1) {
+            errExit("<Server> shmat failed");
+        }
+
+        // Inserts the new node in the shared memory
+        insert_list(attached_shm_list, request -> id, user_key);
+
         // Writes the response on the FIFO
         if(write(FIFOCLIENT, user_key, sizeof(Response_t *)) == 0) {
             errExit("<Server> write on FIFOSERVER failed");
@@ -118,6 +164,11 @@ int main (int argc, char *argv[]) {
     // Deletes the shared memory
     if(shmctl(shmid, IPC_RMID, NULL) == -1) {
         errExit("<Server> shmctl IPC_RMID failed");
+    }
+
+    // Remove the file that contains the shmid
+    if(remove("../../shm_id.txt") == -1) {
+        errExit("<Server> remove failed");
     }
 
     // Checks on errors closing FIFOSERVER file descriptor
@@ -172,7 +223,34 @@ void sigHandler(int sig) {
     printf("SIGTERM occourred");
 }
 
-// Get current timestamp
-void get_timestamp(Data_t *user_data) {
-    gettimeofday(&user_data -> timestamp, NULL);
+// Checks if five minutes difference sussist between 2 timestamps
+int check_five_min_diff(struct timeval *current, struct timeval *data_timestamp) {
+    if((current -> tv_sec) - (data_timestamp -> tv_sec) >= 300) {
+        return 1;
+    }
+
+    return 0;
+}
+
+// Compare two different data
+int check_eq_data(Data_t *data1, Data_t *data2) {
+    if(strcmp(data1 -> id, data2 -> id) == 0 && 
+        strcmp(userkey_to_string(data1 -> user_key), userkey_to_string(data2 -> user_key)) == 0 && 
+        data1 -> timestamp.tv_sec == data2 -> timestamp.tv_sec
+      ){
+
+        return 1;
+    }
+
+    return 0;
+}
+
+// Coverts *user_key to a string
+char *userkey_to_string(Response_t *user_key) { 
+    char numeric[5];
+    int tmp = atoi(user_key -> user_key_numeric);
+
+    sprintf(numeric, "%d", tmp);
+
+    return strcat(numeric, user_key -> user_key_service);
 }
