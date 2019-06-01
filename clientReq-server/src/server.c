@@ -131,17 +131,21 @@ int main (int argc, char *argv[]) {
             // Reset the current node to the head of the list
             current_node = attached_shm_list -> head;
 
-            if(signal(SIGTERM, sigHandler) == SIG_ERR) {
-                errExit("<KeyManager> signal failed");
+            // TODO Catch di SIGTERM per uscire dal programma
+            // =======================================
+            // Detach this process from the Shared Memory
+            if(shmdt(attached_shm_list) == -1) {
+                errExit("<KeyManager> shmdt failed");
             }
+            // =======================================
         }
     }
     // =============================================
 
-    if(user_key != NULL) {
-        // Attach the server to the Shared Memory
+    // Attach the server to the Shared Memory
         List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
-        
+
+    if(user_key != NULL) {
         if(attached_shm_list == (List_t *) -1) {
             errExit("<Server> shmat failed");
         }
@@ -160,6 +164,10 @@ int main (int argc, char *argv[]) {
     // Waits for SIGTERM
     // TODO Catch di SIGTERM per uscire dal programma
     // =======================================
+    // Detach this process from the Shared Memory
+    if(shmdt(attached_shm_list) == -1) {
+        errExit("<Server> shmdt failed");
+    }
 
     // Deletes the shared memory
     if(shmctl(shmid, IPC_RMID, NULL) == -1) {
@@ -185,6 +193,7 @@ int main (int argc, char *argv[]) {
     if(unlink(path2ServerFIFO) == -1) {
         errExit("<Server> unlink FIFOSERVER failed");
     }
+    // =======================================
 
     return 0;
 }

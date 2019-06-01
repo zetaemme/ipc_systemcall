@@ -11,8 +11,6 @@
 #include "../../utils/include/errExit.h"
 
 int main (int argc, char *argv[]) {
-    // TODO Accesso a segmento di Shared Memory e validazione dati
-
     // argv[1] = id, argv[2] = user_key, argv[3] = args
 
     // Slices the id to get the service reference part
@@ -64,9 +62,15 @@ int main (int argc, char *argv[]) {
         }
     }
 
+    // Detachs ClientExec from the Shared Memory
+    if(shmdt(attached_shm_list) == -1) {
+        errExit("<ClientExec> shmdt failed");
+    }
+
     return 0;
 }
 
+// Slices src string from start to end and saves it into dest
 void str_slice(const char *src, char *dest, size_t start, size_t end) {
     size_t j = 0;
 
