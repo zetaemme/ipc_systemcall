@@ -76,20 +76,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Request read from FIFO
-    Request_t *request;4];
-    str_slice(argv[1], service, 4, 8);
-
-    // Creating a subset array containing the arguments for the execl syscall
-    char **args = (char **) malloc((argc - 3) * sizeof(char));
-
-    int j = 0;
-    for(int i = 3; i < argc; i++) {
-        strcpy(args[j], argv[i]);
-
-        j++;
-    }
-
-    // Gets the shared memory id
+    Request_t *request;
     
     // Reads the request from FIFOSERVER
     if(read(FIFOSERVER, request, sizeof(Request_t *)) == -1) {
@@ -152,6 +139,16 @@ int main (int argc, char *argv[]) {
     // =============================================
 
     if(user_key != NULL) {
+        // Attach the server to the Shared Memory
+        List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
+        
+        if(attached_shm_list == (List_t *) -1) {
+            errExit("<Server> shmat failed");
+        }
+
+        // Inserts the new node in the shared memory
+        insert_list(attached_shm_list, request -> id, user_key);
+
         // Writes the response on the FIFO
         if(write(FIFOCLIENT, user_key, sizeof(Response_t *)) == 0) {
             errExit("<Server> write on FIFOSERVER failed");

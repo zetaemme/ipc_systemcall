@@ -15,7 +15,7 @@ typedef struct List_s {
 } List_t;
 
 List_t *allocate_shmem_list(Node_t *head);
-void insert_list(List_t *list, Node_t *node);
+void insert_list(List_t *list, char id[], Response_t *user_key);
 void delete_from_list(List_t *list, Node_t *node);
 
 #endif
