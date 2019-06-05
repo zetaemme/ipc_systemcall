@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "../../utils/include/errExit.h"
+#include "../../lib/include/err_lib.h"
+#include "../../lib/include/str_lib.h"
 #include "../include/clientReq.h"
 #include "../include/server.h"
 
@@ -92,10 +92,3 @@ int main (int argc, char *argv[]) {
     return 0;
 }
 
-int validate_service(char service[]) {
-    if(strcmp(service, "Stampa") < 0 || strcmp(service, "Salva") < 0 || strcmp(service, "Invia") < 0) {
-        return -1;
-    }
-
-    return 1;
-}

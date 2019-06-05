@@ -1,13 +1,4 @@
-#include "../../clientReq-server/include/server.h"
-#include "../include/list_utils.h"
-
-// Allocates the shared memory linked list
-List_t *allocate_shmem_list(Node_t *head) {
-    List_t *new_list = (List_t *) malloc(sizeof(List_t *));
-    new_list -> head = head;
-
-    return new_list;
-}
+#include "../include/list_lib.h"
 
 // Instert a new node in the data list
 void insert_list(List_t *list, char id[], Response_t *user_key) {

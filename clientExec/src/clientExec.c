@@ -1,14 +1,14 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/stat.h>
+#include <sys/shm.h>
 
-#include "../../utils/include/list_utils.h"
-#include "../include/clientExec.h"
-#include "../../clientReq-server/include/server.h"
-#include "../../utils/include/errExit.h"
+#include "../../lib/include/list_lib.h"
+#include "../../lib/include/str_lib.h"
+#include "../../lib/include/server_lib.h"
+#include "../../lib/include/err_lib.h"
 
 int main (int argc, char *argv[]) {
     // argv[1] = id, argv[2] = user_key, argv[3] = args
@@ -68,13 +68,4 @@ int main (int argc, char *argv[]) {
     }
 
     return 0;
-}
-
-// Slices src string from start to end and saves it into dest
-void str_slice(const char *src, char *dest, size_t start, size_t end) {
-    size_t j = 0;
-
-    for (size_t i = start; i <= end; ++i) {
-        dest[j++] = src[i];
-    }
 }

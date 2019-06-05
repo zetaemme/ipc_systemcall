@@ -1,5 +1,9 @@
-#ifndef ERREXIT_H
-#define ERREXIT_H
+#ifndef ERR_LIB_H
+#define ERR_LIB_H
+
+#include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
 
 /* 
     Prints out error messages ;)

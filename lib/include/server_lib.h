@@ -1,14 +1,10 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef SERVER_LIB_H
+#define SERVER_LIB_H
 
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdio.h>
-#include <signal.h>
 #include <sys/time.h>
+#include <stdlib.h>
 
-#include "./clientReq.h"
+#include "./request_lib.h"
 
 // Struct that defines server's response, using typedef for clean code 
 typedef struct Response_s {
@@ -25,9 +21,7 @@ typedef struct Data_s {
 
 void generate_key(Request_t *request, Response_t *response);
 void print_key(Response_t *response);
-void sigHandler(int sig);
 int check_five_min_diff(struct timeval *current, struct timeval *data_timestamp);
 int check_eq_data(Data_t *data1, Data_t *data2);
-char *userkey_to_string(Response_t *user_key);
 
 #endif

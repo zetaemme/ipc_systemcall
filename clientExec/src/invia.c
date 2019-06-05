@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
 #include <sys/msg.h>
@@ -7,8 +5,8 @@
 #include <sys/ipc.h>
 #include <sys/stat.h>
 
-#include "../../utils/include/errExit.h"
-#include "../include/invia.h"
+#include "../../lib/include/err_lib.h"
+#include "../../lib/include/msg_lib.h"
 
 int main (int argc, char *argv[]) {
     // Stores the message que key (first argument) in a local variable
