@@ -1,8 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdbool.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/types.h>
@@ -16,6 +13,7 @@
 #include "../../lib/include/list_lib.h"
 #include "../../lib/include/request_lib.h"
 #include "../../lib/include/sig_lib.h"
+#include "../../lib/include/sem_lib.h"
 
 int main (int argc, char *argv[]) {
     // Path to FIFOSERVER/FIFOCLIENT location in filesystem
@@ -52,6 +50,9 @@ int main (int argc, char *argv[]) {
     if(shmid == -1) {
         errExit("<Server> shmget failed");
     }
+
+    // Create the semaphore set
+    int semid = semget(shmKey, 3, IPC_CREAT | S_IRUSR | S_IWUSR);
 
     // Signal set
     sigset_t noSIGTERMSet;
@@ -142,7 +143,7 @@ int main (int argc, char *argv[]) {
     // =============================================
 
     // Attach the server to the Shared Memory
-        List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
+    List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
 
     if(user_key != NULL) {
         if(attached_shm_list == (List_t *) -1) {

@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -7,8 +5,8 @@
 
 #include "../../lib/include/err_lib.h"
 #include "../../lib/include/str_lib.h"
-#include "../include/clientReq.h"
-#include "../include/server.h"
+#include "../../lib/include/request_lib.h"
+#include "../../lib/include/server_lib.h"
 
 int main (int argc, char *argv[]) {
     char id[256], service[7];
