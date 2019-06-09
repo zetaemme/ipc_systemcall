@@ -1,8 +1,4 @@
-#include "../include/errExit.h"
-
-#include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
+#include "../../lib/include/err_lib.h"
 
 // Implementation of errExit
 void errExit(const char *msg) {

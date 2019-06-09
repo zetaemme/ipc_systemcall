@@ -1,18 +1,15 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/stat.h>
+#include <sys/shm.h>
 
-#include "../../utils/include/list_utils.h"
-#include "../include/clientExec.h"
-#include "../../clientReq-server/include/server.h"
-#include "../../utils/include/errExit.h"
+#include "../../lib/include/list_lib.h"
+#include "../../lib/include/str_lib.h"
+#include "../../lib/include/server_lib.h"
+#include "../../lib/include/err_lib.h"
 
 int main (int argc, char *argv[]) {
-    // TODO Accesso a segmento di Shared Memory e validazione dati
-
     // argv[1] = id, argv[2] = user_key, argv[3] = args
 
     // Slices the id to get the service reference part
@@ -64,13 +61,10 @@ int main (int argc, char *argv[]) {
         }
     }
 
-    return 0;
-}
-
-void str_slice(const char *src, char *dest, size_t start, size_t end) {
-    size_t j = 0;
-
-    for (size_t i = start; i <= end; ++i) {
-        dest[j++] = src[i];
+    // Detachs ClientExec from the Shared Memory
+    if(shmdt(attached_shm_list) == -1) {
+        errExit("<ClientExec> shmdt failed");
     }
+
+    return 0;
 }

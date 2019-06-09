@@ -1,12 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "../../utils/include/errExit.h"
+#include "../../lib/include/err_lib.h"
 
 int main (int argc, char *argv[]) { 
     // Generate the new file's filename
