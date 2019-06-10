@@ -6,7 +6,7 @@
 
 #include "../../lib/include/err_lib.h"
 
-int main (int argc, char *argv[]) { 
+int main(int argc, char *argv[]) { 
     // Generate the new file's filename
     char *filename = strcat(argv[0], ".txt");
 

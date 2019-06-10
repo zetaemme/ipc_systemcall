@@ -2,7 +2,10 @@
 #define SERVER_LIB_H
 
 #include <sys/time.h>
+#include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "./request_lib.h"
 
@@ -23,5 +26,7 @@ void generate_key(Request_t *request, Response_t *response);
 void print_key(Response_t *response);
 int check_five_min_diff(struct timeval *current, struct timeval *data_timestamp);
 int check_eq_data(Data_t *data1, Data_t *data2);
+int validate_service(char service[]);
+char *userkey_to_string(Response_t *user_key);
 
 #endif

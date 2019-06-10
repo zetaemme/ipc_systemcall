@@ -1,15 +1,16 @@
+CFLAGS = -Wall -std=gnu99
 
-CFLAGS=-Wall -std=gnu99
-INCLUDES=-I./inc
+# list source code files for client exec executable
+CLIENT_SRCS = src/clientExec.c ../lib/src/list_lib.c ../lib/src/str_lib.c ../lib/src/server_lib.c ../lib/src/err_lib.c
 
-# list source code files for clientExc executable
-CLIENT_SRCS=src/clientExec.c
 # list source code files for salva executable
-SALVA_SRCS=src/salva.c
+SALVA_SRCS = src/salva ../lib/src/err_lib.c
+
 # list source code files for stampa executable
-STAMPA_SRCS=src/stampa.c
-# list source code files for inva executable
-INVIA_SRCS=src/invia.c
+STAMPA_SRCS = src/stampa.c
+
+# list source code files for invia executable
+INVIA_SRC = src/invia.c ../lib/src/err_lib.c ../src/msg_lib.c
 
 ##------------------------------------------------------------------------------
 ## DO NOT TOUCH BELOW THIS LINE!
@@ -39,10 +40,10 @@ invia: $(INVIA_OBJS)
 
 .c.o:
 	@echo "Compiling: "$<
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 
 clean:
-	@rm -f src/*.o clientExec stampa salva invia
+	@rm -f src/*.o clientExec stampa salva invia ../lib/src/*.o
 	@echo "Removed object files and executables..."

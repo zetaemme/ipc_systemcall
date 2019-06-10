@@ -50,3 +50,26 @@ int check_eq_data(Data_t *data1, Data_t *data2) {
 
     return 0;
 }
+
+// Checks if the serivice is valid
+int validate_service(char service[]) {
+    if(strcmp(service, "Stampa") < 0 || strcmp(service, "Salva") < 0 || strcmp(service, "Invia") < 0) {
+        return -1;
+    }
+
+    return 1;
+}
+
+// Coverts *user_key to a string
+char *userkey_to_string(Response_t *user_key) { 
+    char numeric[5];
+    
+    // Converts int array into string
+    for(int i = 0; i < 5; i++) {
+        numeric[i] = user_key -> user_key_numeric[i] + '0';
+    }
+
+    numeric[4] = '\0';
+
+    return strcat(numeric, user_key -> user_key_service);
+}

@@ -52,7 +52,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Create the semaphore set
-    int semid = semget(shmKey, 3, IPC_CREAT | S_IRUSR | S_IWUSR);
+    int semid = semget(shmKey, 1, IPC_CREAT | S_IRUSR | S_IWUSR);
 
     // Signal set
     sigset_t noSIGTERMSet;
