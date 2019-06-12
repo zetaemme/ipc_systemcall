@@ -2,33 +2,35 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/ipc.h> 
 
 #include "../../lib/include/err_lib.h"
 #include "../../lib/include/str_lib.h"
 #include "../../lib/include/request_lib.h"
 #include "../../lib/include/server_lib.h"
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     char id[256], service[7];
 
     // Path to FIFOCLIENT/FIFOSERVER location in filesystem
-    char *path2ClientFIFO = "FIFOs/FIFOCLIENT";
-    char *path2ServerFIFO = "FIFOs/FIFOSERVER";
-
-    // FIFOCLIENT file descriptor
-    int FIFOCLIENT;
-
-    // FIFOSERVER file descriptor
-    int FIFOSERVER;
+    const char *path2ClientFIFO = "FIFO/FIFOCLIENT";
+    const char *path2ServerFIFO = "FIFO/FIFOSERVER";
 
     // Checks for error making FIFOCLIENT
+    printf("Creating FIFOCLIENT...\n\n");
+
     if(mkfifo(path2ClientFIFO, S_IRUSR | S_IWUSR) == -1) {
         errExit("<Client Request> mkfifo FIFOCLIENT failed");
     }
 
     // Opens FIFOCLIENT/FIFOSERVER and place them into FDT
-    FIFOCLIENT = open(path2ClientFIFO, O_RDONLY);
-    FIFOSERVER = open(path2ServerFIFO, O_WRONLY);
+    printf("Opening FIFOs...\n\n");
+
+    int FIFOCLIENT = open(path2ClientFIFO, O_RDONLY);
+    int FIFOSERVER = open(path2ServerFIFO, O_WRONLY);
+
+    printf("%i\n", FIFOSERVER);
+    printf("%i\n", FIFOCLIENT);
 
     // Checks on errors opning FIFOCLIENT/FIFOSERVER
     if(FIFOSERVER == -1) {
@@ -46,7 +48,7 @@ int main (int argc, char *argv[]) {
         scanf("%6s", service);
     } while(validate_service(service) == -1);
 
-    Request_t *request;
+    Request_t *request = NULL;
 
     // Assigns the values to the Request
     strcpy(request -> id, id);
@@ -59,7 +61,7 @@ int main (int argc, char *argv[]) {
 
     sleep(3);
 
-    Response_t *user_key;
+    Response_t *user_key = NULL;
 
     // Reads the resposnse from the FIFOCLIENT
     if(read(FIFOCLIENT, user_key, sizeof(Response_t *)) == -1) {

@@ -1,12 +1,10 @@
-
 CFLAGS=-Wall -std=gnu99
-INCLUDES=-I./inc
 
 # list source code files for server executable
-SERVER_SRCS=src/server.c
+SERVER_SRCS = src/server.c ../lib/src/err_lib.c ../lib/src/server_lib.c ../lib/src/list_lib.c ../lib/src/sig_lib.c ../lib/src/sem_lib.c
 
 # list source code files for client executable
-CLIENT_SRCS=src/clientReq.c
+CLIENT_SRCS = src/clientReq.c ../lib/src/err_lib.c ../lib/src/str_lib.c ../lib/src/server_lib.c
 
 ##------------------------------------------------------------------------------
 ## DO NOT TOUCH BELOW THIS LINE!
@@ -26,10 +24,10 @@ clientReq: $(CLIENT_OBJS)
 
 .c.o:
 	@echo "Compiling: "$<
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 
 clean:
-	@rm -f src/*.o server clientReq
+	@rm -f src/*.o server clientReq ../lib/src/*.o ./FIFO/FIFOSERVER ./FIFO/FIFOCLIENT
 	@echo "Removed object files and executables..."

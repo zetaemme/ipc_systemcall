@@ -4,7 +4,7 @@
 void insert_list(List_t *list, char id[], Response_t *user_key) {
     // Node to insert and iteration node
     Node_t *current = list -> head;
-    Node_t *new_node;
+    Node_t *new_node = NULL;
 
     // Inits the node to insert
     strcpy(new_node -> value -> id, id);
@@ -35,7 +35,7 @@ void delete_from_list(List_t *list, Node_t *node) {
     
     // If we have a 1 element list and that element is the designed element
     if(current -> next == NULL && check_eq_data(current -> value, node -> value)) {
-        current == NULL;
+        current = NULL;
     } else {
         // For each node in the list
         while(current -> next != NULL) {

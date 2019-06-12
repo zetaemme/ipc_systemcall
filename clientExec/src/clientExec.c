@@ -6,7 +6,6 @@
 
 #include "../../lib/include/list_lib.h"
 #include "../../lib/include/str_lib.h"
-#include "../../lib/include/server_lib.h"
 #include "../../lib/include/err_lib.h"
 
 int main (int argc, char *argv[]) {
