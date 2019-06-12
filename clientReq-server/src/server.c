@@ -16,27 +16,25 @@
 #include "../../lib/include/sem_lib.h"
 
 int main (int argc, char *argv[]) {
-    // Path to FIFOSERVER/FIFOCLIENT location in filesystem
-    char *path2ServerFIFO = "FIFOs/FIFOSERVER";
-    char *path2ClientFIFO = "FIFOs/FIFOCLIENT";
-
-    // FIFOSERVER file desctiptor
-    int FIFOSERVER;
-
-    // FIFOCLIENT file descriptor
-    int FIFOCLIENT;
+    // Path to the fifo files
+    char *path2FIFOServer = "FIFO/FIFOSERVER";
+    char *path2FIFOClient = "FIFO/FIFOCLIENT";
 
     // Checks on error making FIFOSERVER
-    if(mkfifo(path2ServerFIFO, S_IWUSR | S_IRUSR) == -1) {
-        errExit("<Server> mkfifo FIFOSERVER falied");
+    printf("Creating FIFOSERVER...\n\n");
+
+    if(mkfifo(path2FIFOServer, S_IWUSR | S_IRUSR) == -1) {
+        errExit("<Server> mkfifo FIFOSERVER failed");
     }
 
     // Opens FIFOSERVER/FIFOCLIENT and place them in FDT
-    FIFOSERVER = open(path2ServerFIFO, O_RDONLY);
-    FIFOCLIENT = open(path2ClientFIFO, O_WRONLY);
+    printf("Opening FIFOs...\n\n");
+
+    int FIFOSERVER = open(path2FIFOServer, O_WRONLY);
+    int FIFOCLIENT = open(path2FIFOClient, O_RDONLY);
 
     // Creates the Shared Memory key
-    key_t shmKey = ftok("./server.c", 's');
+    key_t shmKey = ftok("src/server.c", 's');
 
     // Checks if ftok succesfully created a key
     if(shmKey == -1) {
@@ -52,7 +50,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Create the semaphore set
-    int semid = semget(shmKey, 1, IPC_CREAT | S_IRUSR | S_IWUSR);
+    // int semid = semget(shmKey, 1, IPC_CREAT | S_IRUSR | S_IWUSR);
 
     // Signal set
     sigset_t noSIGTERMSet;
@@ -76,7 +74,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Request read from FIFO
-    Request_t *request;
+    Request_t *request = NULL;
     
     // Reads the request from FIFOSERVER
     if(read(FIFOSERVER, request, sizeof(Request_t *)) == -1) {
@@ -84,7 +82,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Response containing the user key
-    Response_t *user_key;
+    Response_t *user_key = NULL;
 
     // Generate user_key
     if(strcmp(request -> service, "Stampa") >= 0 || strcmp(request -> service, "Salva") >= 0 || strcmp(request -> service, "Invia") >= 0) {
@@ -190,7 +188,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Checks fo errors unlinking the FIFO
-    if(unlink(path2ServerFIFO) == -1) {
+    if(unlink(path2FIFOServer) == -1) {
         errExit("<Server> unlink FIFOSERVER failed");
     }
     // =======================================
