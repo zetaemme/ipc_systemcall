@@ -17,21 +17,28 @@
 
 int main (int argc, char *argv[]) {
     // Path to the fifo files
-    char *path2FIFOServer = "FIFO/FIFOSERVER";
-    char *path2FIFOClient = "FIFO/FIFOCLIENT";
+    char *path2FIFOServer = "./FIFO/FIFOSERVER";
+    char *path2FIFOClient = "./FIFO/FIFOCLIENT";
 
     // Checks on error making FIFOSERVER
-    printf("Creating FIFOSERVER...\n\n");
+    printf("Creating FIFOSERVER...\n");
 
     if(mkfifo(path2FIFOServer, S_IWUSR | S_IRUSR) == -1) {
         errExit("<Server> mkfifo FIFOSERVER failed");
     }
 
     // Opens FIFOSERVER/FIFOCLIENT and place them in FDT
-    printf("Opening FIFOs...\n\n");
+    printf("Opening FIFOs...\n");
 
     int FIFOSERVER = open(path2FIFOServer, O_WRONLY);
     int FIFOCLIENT = open(path2FIFOClient, O_RDONLY);
+
+    // Checks on errors opning FIFOCLIENT/FIFOSERVER
+    if(FIFOCLIENT == -1) {
+        errExit("<Client Request> open FIFOCLIENT failed");
+    } else if(FIFOCLIENT == -1) {
+        errExit("<Client Request> open FIFOCLIENT failed");
+    }
 
     // Creates the Shared Memory key
     key_t shmKey = ftok("src/server.c", 's');

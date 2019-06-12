@@ -13,28 +13,25 @@ int main(int argc, char *argv[]) {
     char id[256], service[7];
 
     // Path to FIFOCLIENT/FIFOSERVER location in filesystem
-    const char *path2ClientFIFO = "FIFO/FIFOCLIENT";
-    const char *path2ServerFIFO = "FIFO/FIFOSERVER";
+    static const char *path2ClientFIFO = "./FIFO/FIFOCLIENT";
+    static const char *path2ServerFIFO = "./FIFO/FIFOSERVER";
 
     // Checks for error making FIFOCLIENT
-    printf("Creating FIFOCLIENT...\n\n");
+    printf("Creating FIFOCLIENT...\n");
 
     if(mkfifo(path2ClientFIFO, S_IRUSR | S_IWUSR) == -1) {
         errExit("<Client Request> mkfifo FIFOCLIENT failed");
     }
 
     // Opens FIFOCLIENT/FIFOSERVER and place them into FDT
-    printf("Opening FIFOs...\n\n");
+    printf("Opening FIFOs...\n");
 
     int FIFOCLIENT = open(path2ClientFIFO, O_RDONLY);
     int FIFOSERVER = open(path2ServerFIFO, O_WRONLY);
 
-    printf("%i\n", FIFOSERVER);
-    printf("%i\n", FIFOCLIENT);
-
     // Checks on errors opning FIFOCLIENT/FIFOSERVER
-    if(FIFOSERVER == -1) {
-        errExit("<Client Request> open FIFOSERVER failed");
+    if(FIFOCLIENT == -1) {
+        errExit("<Client Request> open FIFOCLIENT failed");
     } else if(FIFOCLIENT == -1) {
         errExit("<Client Request> open FIFOCLIENT failed");
     }
