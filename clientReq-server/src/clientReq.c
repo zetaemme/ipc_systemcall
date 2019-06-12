@@ -26,15 +26,14 @@ int main(int argc, char *argv[]) {
     // Opens FIFOCLIENT/FIFOSERVER and place them into FDT
     printf("Opening FIFOs...\n");
 
-    int FIFOCLIENT = open(path2ClientFIFO, O_RDONLY);
-    int FIFOSERVER = open(path2ServerFIFO, O_WRONLY);
+    int FIFOCLIENT = open(path2ClientFIFO, O_RDWR, S_IRUSR);
 
     // Checks on errors opning FIFOCLIENT/FIFOSERVER
     if(FIFOCLIENT == -1) {
         errExit("<Client Request> open FIFOCLIENT failed");
-    } else if(FIFOCLIENT == -1) {
-        errExit("<Client Request> open FIFOCLIENT failed");
     }
+
+    printf("\n");
 
     // ========== KEY GENERATION ==========
     do {
@@ -50,6 +49,14 @@ int main(int argc, char *argv[]) {
     // Assigns the values to the Request
     strcpy(request -> id, id);
     strcpy(request -> service, service);
+
+    // Opens FIFOSERVER and add it to the FDT
+    int FIFOSERVER = open(path2ServerFIFO, O_RDWR, S_IWUSR);
+
+    // Checks if open happened
+    if(FIFOSERVER == -1) {
+        errExit("<Client Request> open FIFOSERVER failed");
+    }
 
     // Writes the request on the FIFOCLIENT
     if(write(FIFOSERVER, request, sizeof(Request_t *)) != sizeof(request)) {

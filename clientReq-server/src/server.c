@@ -17,27 +17,24 @@
 
 int main (int argc, char *argv[]) {
     // Path to the fifo files
-    char *path2FIFOServer = "./FIFO/FIFOSERVER";
-    char *path2FIFOClient = "./FIFO/FIFOCLIENT";
+    static const char *path2ClientFIFO = "./FIFO/FIFOCLIENT";
+    static const char *path2ServerFIFO = "./FIFO/FIFOSERVER";
 
     // Checks on error making FIFOSERVER
     printf("Creating FIFOSERVER...\n");
 
-    if(mkfifo(path2FIFOServer, S_IWUSR | S_IRUSR) == -1) {
+    if(mkfifo(path2ServerFIFO, S_IWUSR | S_IRUSR) == -1) {
         errExit("<Server> mkfifo FIFOSERVER failed");
     }
 
     // Opens FIFOSERVER/FIFOCLIENT and place them in FDT
     printf("Opening FIFOs...\n");
 
-    int FIFOSERVER = open(path2FIFOServer, O_WRONLY);
-    int FIFOCLIENT = open(path2FIFOClient, O_RDONLY);
+    int FIFOSERVER = open(path2ServerFIFO, O_RDWR, S_IWUSR);
 
     // Checks on errors opning FIFOCLIENT/FIFOSERVER
-    if(FIFOCLIENT == -1) {
-        errExit("<Client Request> open FIFOCLIENT failed");
-    } else if(FIFOCLIENT == -1) {
-        errExit("<Client Request> open FIFOCLIENT failed");
+    if(FIFOSERVER == -1) {
+        errExit("<Client Request> open FIFOSERVER failed");
     }
 
     // Creates the Shared Memory key
@@ -150,6 +147,9 @@ int main (int argc, char *argv[]) {
     // Attach the server to the Shared Memory
     List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
 
+    // FIFOCLIENT file descriptor
+    int FIFOCLIENT;
+
     if(user_key != NULL) {
         if(attached_shm_list == (List_t *) -1) {
             errExit("<Server> shmat failed");
@@ -157,6 +157,14 @@ int main (int argc, char *argv[]) {
 
         // Inserts the new node in the shared memory
         insert_list(attached_shm_list, request -> id, user_key);
+
+        // Opens FIFOCLIENT and add it to the FDT
+        FIFOCLIENT = open(path2ClientFIFO, O_RDWR, S_IRUSR);
+
+        // Checks if open happened
+        if(FIFOCLIENT == -1) {
+            errExit("<Server> open FIFOCLIENT failed");
+        }
 
         // Writes the response on the FIFO
         if(write(FIFOCLIENT, user_key, sizeof(Response_t *)) == 0) {
@@ -195,7 +203,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Checks fo errors unlinking the FIFO
-    if(unlink(path2FIFOServer) == -1) {
+    if(unlink(path2ServerFIFO) == -1) {
         errExit("<Server> unlink FIFOSERVER failed");
     }
     // =======================================
