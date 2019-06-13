@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#include "../include/server_lib.h"
+#include "./server_lib.h"
 
 // Nodes of the shared memory list
 typedef struct Node_s {

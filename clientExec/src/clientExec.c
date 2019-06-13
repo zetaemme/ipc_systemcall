@@ -21,7 +21,6 @@ int main (int argc, char *argv[]) {
     int j = 0;
     for(int i = 3; i < argc; i++) {
         strcpy(args[j], argv[i]);
-
         j++;
     }
 
@@ -46,23 +45,31 @@ int main (int argc, char *argv[]) {
     // Simula validazione user_key(argv[2])
     if(validity_flag == 1) {
         if(strcmp(service, "prt") == 0) {
-            if(execl("./stampa.c", *args, (char *) NULL) == -1) {
+            if(execl("stampa", "stampa", *args, (char *) NULL) == -1) {
+                printf("\033[1;31m");
                 errExit("<Exec> failed to execute 'Print'");
+                printf("\033[0m");
             }
         } else if(strcmp(service, "snd") == 0) {
-            if(execl("./invia.c", *args, (char *) NULL) == -1) {
+            if(execl("invia", "invia", *args, (char *) NULL) == -1) {
+                printf("\033[1;31m");
                 errExit("<Exec> failed to execute 'Send'");
+                printf("\033[0m");
             }
         } else {
-            if(execl("./salva.c", *args, (char *) NULL) == -1) {
+            if(execl("salva", "salva", *args, (char *) NULL) == -1) {
+                printf("\033[1;31m");
                 errExit("<Exec> failed to execute 'Save'");
+                printf("\033[0m");
             }
         }
     }
 
     // Detachs ClientExec from the Shared Memory
     if(shmdt(attached_shm_list) == -1) {
+        printf("\033[1;31m");
         errExit("<ClientExec> shmdt failed");
+        printf("\033[0m");
     }
 
     return 0;

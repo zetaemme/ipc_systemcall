@@ -10,11 +10,19 @@ int main(int argc, char *argv[]) {
     // Generate the new file's filename
     char *filename = strcat(argv[0], ".txt");
 
+    printf("Creating file...\t\t");
+
     // Creates exclusively the new file
     int file = open(filename, O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
 
     if(file == -1) {
-        errExit("<Exec> open failed");
+        printf("\033[1;31m");
+        errExit("\n<Exec> open failed");
+        printf("\033[0m");
+    } else {
+        printf("\033[1;32m");
+        printf("DONE!\n");
+        printf("\033[0m");
     }
 
     // Buffer that contains the string and while loop index
@@ -25,13 +33,17 @@ int main(int argc, char *argv[]) {
         strcpy(buffer, argv[i]);
 
         if(write(file, buffer, sizeof(argv[i]))) {
+            printf("\033[1;31m");
             errExit("<Exec> write failed");
+            printf("\033[0m");
         }
 
         i++;
     }
 
+    printf("\033[1;32m");
     printf("Save complete!\n");
+    printf("\033[0m");
 
     return 0;
 }

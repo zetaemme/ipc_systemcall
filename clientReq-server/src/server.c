@@ -84,6 +84,8 @@ int main (int argc, char *argv[]) {
     // Create the semaphore set
     // int semid = semget(shmKey, 1, IPC_CREAT | S_IRUSR | S_IWUSR);
 
+    printf("Generating SigSet...\t\t");
+
     // Signal set
     sigset_t noSIGTERMSet;
 
@@ -96,24 +98,33 @@ int main (int argc, char *argv[]) {
     // Blocks all signals but SIGTERM
     sigprocmask(SIG_SETMASK, &noSIGTERMSet, NULL);
 
-    // Creates the child process KeyManager
-    pid_t key_manager = fork();
-
     // ========== SERVER OPERATION SECTION ==========
     // sigHandler as handler for SIGTERM
     if(signal(SIGTERM, sigHandler) == SIG_ERR) {
         printf("\033[1;31m");
         errExit("<Server> signal failed");
         printf("\033[0m");
+    } else {
+        printf("\033[1;32m");
+        printf("DONE!\n");
+        printf("\033[0m");
     }
 
     // Request read from FIFO
     Request_t *request = NULL;
     
+    printf("Reading from FIFOSERVER...\t\t");
+
+    // QUI SI BLOCCA PERCHE' NON HA FIFOCLIENT
+
     // Reads the request from FIFOSERVER
     if(read(FIFOSERVER, request, sizeof(Request_t *)) == -1) {
         printf("\033[1;31m");
         errExit("<Server> read from FIFOSERVER failed");
+        printf("\033[0m");
+    } else {
+        printf("\033[1;32m");
+        printf("DONE!\n");
         printf("\033[0m");
     }
 
@@ -125,8 +136,16 @@ int main (int argc, char *argv[]) {
         generate_key(request, user_key);
     }
 
+    printf("Forking KeyManager...\t\t");
+
+    // Creates the child process KeyManager
+    pid_t key_manager = fork();
+
     // ================= KEYMANAGER ===============
     if(key_manager == 0) {
+
+        printf("Key manager is running...\n\n");
+
         // Attach the shared memory segment
         List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
 
