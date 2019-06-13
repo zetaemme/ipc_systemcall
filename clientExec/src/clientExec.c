@@ -46,30 +46,22 @@ int main (int argc, char *argv[]) {
     if(validity_flag == 1) {
         if(strcmp(service, "prt") == 0) {
             if(execl("stampa", "stampa", *args, (char *) NULL) == -1) {
-                printf("\033[1;31m");
                 errExit("<Exec> failed to execute 'Print'");
-                printf("\033[0m");
             }
         } else if(strcmp(service, "snd") == 0) {
             if(execl("invia", "invia", *args, (char *) NULL) == -1) {
-                printf("\033[1;31m");
                 errExit("<Exec> failed to execute 'Send'");
-                printf("\033[0m");
             }
         } else {
             if(execl("salva", "salva", *args, (char *) NULL) == -1) {
-                printf("\033[1;31m");
                 errExit("<Exec> failed to execute 'Save'");
-                printf("\033[0m");
             }
         }
     }
 
     // Detachs ClientExec from the Shared Memory
     if(shmdt(attached_shm_list) == -1) {
-        printf("\033[1;31m");
         errExit("<ClientExec> shmdt failed");
-        printf("\033[0m");
     }
 
     return 0;

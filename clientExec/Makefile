@@ -4,7 +4,7 @@ CFLAGS = -Wall -std=gnu99
 CLIENT_SRCS = src/clientExec.c ../lib/src/list_lib.c ../lib/src/str_lib.c ../lib/src/err_lib.c ../lib/src/server_lib.c
 
 # list source code files for salva executable
-SALVA_SRCS = src/salva ../lib/src/err_lib.c
+SALVA_SRCS = src/salva.c ../lib/src/err_lib.c
 
 # list source code files for stampa executable
 STAMPA_SRCS = src/stampa.c

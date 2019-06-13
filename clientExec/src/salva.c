@@ -16,14 +16,14 @@ int main(int argc, char *argv[]) {
     int file = open(filename, O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
 
     if(file == -1) {
-        printf("\033[1;31m");
         errExit("\n<Exec> open failed");
-        printf("\033[0m");
     } else {
-        printf("\033[1;32m");
         printf("DONE!\n");
-        printf("\033[0m");
     }
+
+    // ============= QUI C'E' QUALCHE PROBLEMA =====================
+
+    // TODO
 
     // Buffer that contains the string and while loop index
     char buffer[256];
@@ -33,17 +33,15 @@ int main(int argc, char *argv[]) {
         strcpy(buffer, argv[i]);
 
         if(write(file, buffer, sizeof(argv[i]))) {
-            printf("\033[1;31m");
             errExit("<Exec> write failed");
-            printf("\033[0m");
         }
 
         i++;
     }
 
-    printf("\033[1;32m");
+    // ==============================================================
+
     printf("Save complete!\n");
-    printf("\033[0m");
 
     return 0;
 }

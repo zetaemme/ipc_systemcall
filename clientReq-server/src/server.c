@@ -12,6 +12,7 @@
 #include "../../lib/include/server_lib.h"
 #include "../../lib/include/list_lib.h"
 #include "../../lib/include/request_lib.h"
+#include "../../lib/include/str_lib.h"
 #include "../../lib/include/sig_lib.h"
 #include "../../lib/include/sem_lib.h"
 
@@ -24,13 +25,9 @@ int main (int argc, char *argv[]) {
     printf("Creating FIFOSERVER...\t\t");
 
     if(mkfifo(path2ServerFIFO, S_IWUSR | S_IRUSR) == -1) {
-        printf("\033[1;31m");
         errExit("<Server> mkfifo FIFOSERVER failed");
-        printf("\033[0m");
     } else {
-        printf("\033[1;32m");
         printf("DONE!\n");
-        printf("\033[0m");
     }    
 
     // Opens FIFOSERVER/FIFOCLIENT and place them in FDT
@@ -40,13 +37,9 @@ int main (int argc, char *argv[]) {
 
     // Checks on errors opning FIFOCLIENT/FIFOSERVER
     if(FIFOSERVER == -1) {
-        printf("\033[1;31m");
         errExit("<Client Request> open FIFOSERVER failed");
-        printf("\033[0m");
     } else {
-        printf("\033[1;32m");
         printf("DONE!\n");
-        printf("\033[0m");
     }
 
     printf("Generating shm key...\t\t");
@@ -56,13 +49,9 @@ int main (int argc, char *argv[]) {
 
     // Checks if ftok succesfully created a key
     if(shmKey == -1) {
-        printf("\033[1;31m");
-        errExit("\n\n<Server> shared memory ftok failed");
-        printf("\033[0m");
+        errExit("<Server> shared memory ftok failed");
     } else {
-        printf("\033[1;32m");
         printf("DONE!\n");
-        printf("\033[0m");
     }
 
     printf("Getting Shared Memory...\t");
@@ -72,13 +61,9 @@ int main (int argc, char *argv[]) {
   
     // Checks if the shared memory was successfully created
     if(shmid == -1) {
-        printf("\033[1;31m");
         errExit("\n\n<Server> shmget failed");
-        printf("\033[0m");
     } else {
-        printf("\033[1;32m");
         printf("DONE!\n");
-        printf("\033[0m");
     }
 
     // Create the semaphore set
@@ -101,13 +86,9 @@ int main (int argc, char *argv[]) {
     // ========== SERVER OPERATION SECTION ==========
     // sigHandler as handler for SIGTERM
     if(signal(SIGTERM, sigHandler) == SIG_ERR) {
-        printf("\033[1;31m");
-        errExit("<Server> signal failed");
-        printf("\033[0m");
-    } else {
-        printf("\033[1;32m");
-        printf("DONE!\n");
-        printf("\033[0m");
+        errExit("<Server> signal failed");      
+    } else {      
+        printf("DONE!\n");      
     }
 
     // Request read from FIFO
@@ -119,20 +100,20 @@ int main (int argc, char *argv[]) {
 
     // Reads the request from FIFOSERVER
     if(read(FIFOSERVER, request, sizeof(Request_t *)) == -1) {
-        printf("\033[1;31m");
         errExit("<Server> read from FIFOSERVER failed");
-        printf("\033[0m");
     } else {
-        printf("\033[1;32m");
         printf("DONE!\n");
-        printf("\033[0m");
     }
 
     // Response containing the user key
     Response_t *user_key = NULL;
 
+    // Turn the request -> service lowercase
+    char *lower_service = request -> service;
+    lower_case(lower_service);
+
     // Generate user_key
-    if(strcmp(request -> service, "Stampa") >= 0 || strcmp(request -> service, "Salva") >= 0 || strcmp(request -> service, "Invia") >= 0) {
+    if(strcmp(lower_service, "stampa") >= 0 || strcmp(lower_service, "salva") >= 0 || strcmp(lower_service, "invia") >= 0) {
         generate_key(request, user_key);
     }
 
@@ -150,9 +131,7 @@ int main (int argc, char *argv[]) {
         List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
 
         if(attached_shm_list == (List_t *) -1) {
-            printf("\033[1;31m");
             errExit("<KeyMamager> shmat failed");
-            printf("\033[0m");
         }
 
         // Now-time value
@@ -166,8 +145,6 @@ int main (int argc, char *argv[]) {
             // Gets the current time
             gettimeofday(&current_time, NULL);
 
-            // FRA TE SPARO
-
             while(current_node -> next != NULL) {
                 if(check_five_min_diff(&current_time, &(current_node -> value) -> timestamp)) {
                     delete_from_list(attached_shm_list, current_node);
@@ -177,8 +154,6 @@ int main (int argc, char *argv[]) {
                     current_node = current_node -> next;
                 }
             }
-
-            // FA NA CANNA
 
             // Sleep for 30 seconds
             sleep(30);
@@ -190,9 +165,7 @@ int main (int argc, char *argv[]) {
             // =======================================
             // Detach this process from the Shared Memory
             if(shmdt(attached_shm_list) == -1) {
-                printf("\033[1;31m");
                 errExit("<KeyManager> shmdt failed");
-                printf("\033[0m");
             }
             // =======================================
         }
@@ -207,9 +180,7 @@ int main (int argc, char *argv[]) {
 
     if(user_key != NULL) {
         if(attached_shm_list == (List_t *) -1) {
-            printf("\033[1;31m");
             errExit("<Server> shmat failed");
-            printf("\033[0m");
         }
 
         // Inserts the new node in the shared memory
@@ -220,21 +191,15 @@ int main (int argc, char *argv[]) {
 
         // Checks if open happened
         if(FIFOCLIENT == -1) {
-            printf("\033[1;31m");
             errExit("<Server> open FIFOCLIENT failed");
-            printf("\033[0m");
         }
 
         // Writes the response on the FIFO
         if(write(FIFOCLIENT, user_key, sizeof(Response_t *)) == 0) {
-            printf("\033[1;31m");
             errExit("<Server> write on FIFOSERVER failed");
-            printf("\033[0m");
         }
     } else {
-        printf("\033[1;31m");
         errExit("<Server> NULL user key");
-        printf("\033[0m");
     }
 
     // Waits for SIGTERM
@@ -242,37 +207,27 @@ int main (int argc, char *argv[]) {
     // =======================================
     // Detach this process from the Shared Memory
     if(shmdt(attached_shm_list) == -1) {
-        printf("\033[1;31m");
         errExit("<Server> shmdt failed");
-        printf("\033[0m");
     }
 
     // Deletes the shared memory
     if(shmctl(shmid, IPC_RMID, NULL) == -1) {
-        printf("\033[1;31m");
         errExit("<Server> shmctl IPC_RMID failed");
-        printf("\033[0m");
     }
 
     // Checks on errors closing FIFOSERVER file descriptor
     if(close(FIFOSERVER) == -1) {
-        printf("\033[1;31m");
         errExit("<Server> close FIFOSERVER failed");
-        printf("\033[0m");
     }
 
     // Checks on errors closing FIFOCLIENT file descriptor
     if(close(FIFOCLIENT) == -1) {
-        printf("\033[1;31m");
         errExit("<Server> close FIFOCLIENT failed");
-        printf("\033[0m");
     }
 
     // Checks fo errors unlinking the FIFO
     if(unlink(path2ServerFIFO) == -1) {
-        printf("\033[1;31m");
         errExit("<Server> unlink FIFOSERVER failed");
-        printf("\033[0m");
     }
     // =======================================
 
