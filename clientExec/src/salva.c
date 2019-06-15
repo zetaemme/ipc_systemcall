@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     int file = open(filename, O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
 
     if(file == -1) {
-        errExit("\n<Exec> open failed");
+        err_exit("\n<Exec> open failed");
     } else {
         printf("DONE!\n");
     }
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
         strcpy(buffer, argv[i]);
 
         if(write(file, buffer, sizeof(argv[i]))) {
-            errExit("<Exec> write failed");
+            err_exit("<Exec> write failed");
         }
 
         i++;

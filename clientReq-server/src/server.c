@@ -15,14 +15,14 @@
 
 int main (int argc, char *argv[]) {
     // Path to the fifo files
-    static const char *path2ClientFIFO = "./FIFO/FIFOCLIENT";
-    static const char *path2ServerFIFO = "./FIFO/FIFOSERVER";
+    static const char *path_to_client_FIFO = "./FIFO/FIFOCLIENT";
+    static const char *path_to_server_FIFO = "./FIFO/FIFOSERVER";
 
     // Checks on error making FIFOSERVER
     printf("Creating FIFOSERVER...\t\t");
 
-    if(mkfifo(path2ServerFIFO, S_IWUSR | S_IRUSR) == -1) {
-        errExit("<Server> mkfifo FIFOSERVER failed");
+    if(mkfifo(path_to_server_FIFO, S_IWUSR | S_IRUSR) == -1) {
+        err_exit("<Server> mkfifo FIFOSERVER failed");
     } else {
         printf("DONE!\n");
     }
@@ -30,11 +30,11 @@ int main (int argc, char *argv[]) {
     // Opens FIFOSERVER/FIFOCLIENT and place them in FDT
     printf("Opening FIFOSERVER...\t\t");
 
-    int FIFOSERVER = open(path2ServerFIFO, O_CREAT | O_RDWR, S_IWUSR);
+    int FIFOSERVER = open(path_to_server_FIFO, O_CREAT | O_RDWR, S_IWUSR);
 
     // Checks on errors opning FIFOCLIENT/FIFOSERVER
     if(FIFOSERVER == -1) {
-        errExit("<Client Request> open FIFOSERVER failed");
+        err_exit("<Client Request> open FIFOSERVER failed");
     } else {
         printf("DONE!\n");
     }
@@ -42,11 +42,11 @@ int main (int argc, char *argv[]) {
     printf("Generating shm key...\t\t");
 
     // Creates the Shared Memory key
-    key_t shmKey = ftok("src/server.c", 's');
+    key_t shm_key = ftok("src/server.c", 's');
 
     // Checks if ftok succesfully created a key
-    if(shmKey == -1) {
-        errExit("<Server> shared memory ftok failed");
+    if(shm_key == -1) {
+        err_exit("<Server> shared memory ftok failed");
     } else {
         printf("DONE!\n");
     }
@@ -54,36 +54,36 @@ int main (int argc, char *argv[]) {
     printf("Getting Shared Memory...\t");
 
     // Creates the shared memory
-    int shmid = shmget(shmKey, sizeof(Node_t *) * 100, IPC_CREAT | S_IRUSR | S_IWUSR);
+    int shm_id = shmget(shm_key, sizeof(Node_t *) * 100, IPC_CREAT | S_IRUSR | S_IWUSR);
 
     // Checks if the shared memory was successfully created
-    if(shmid == -1) {
-        errExit("\n\n<Server> shmget failed");
+    if(shm_id == -1) {
+        err_exit("\n\n<Server> shmget failed");
     } else {
         printf("DONE!\n");
     }
 
     // Create the semaphore set
-    int semid = semget(shmKey, 1, IPC_CREAT | S_IRUSR | S_IWUSR);
+    int sem_id = semget(shm_key, 1, IPC_CREAT | S_IRUSR | S_IWUSR);
 
     printf("Generating SigSet...\t\t");
 
     // Signal set
-    sigset_t noSIGTERMSet;
+    sigset_t no_SIGTERM_set;
 
     // Fill the signal set
-    sigfillset(&noSIGTERMSet);
+    sigfillset(&no_SIGTERM_set);
 
     // Deletes SIGTERM from mySet
-    sigdelset(&noSIGTERMSet, SIGTERM);
+    sigdelset(&no_SIGTERM_set, SIGTERM);
 
     // Blocks all signals but SIGTERM
-    sigprocmask(SIG_SETMASK, &noSIGTERMSet, NULL);
+    sigprocmask(SIG_SETMASK, &no_SIGTERM_set, NULL);
 
     // ========== SERVER OPERATION SECTION ==========
     // sigHandler as handler for SIGTERM
     if(signal(SIGTERM, server_sig_handler) == SIG_ERR) {
-        errExit("<Server> signal failed");
+        err_exit("<Server> signal failed");
     }
 
     // Executes untill SIGTERM
@@ -95,7 +95,7 @@ int main (int argc, char *argv[]) {
 
         // Reads the request from FIFOSERVER
         if(read(FIFOSERVER, request, sizeof(Request_t *)) == -1) {
-            errExit("<Server> read from FIFOSERVER failed");
+            err_exit("<Server> read from FIFOSERVER failed");
         } else {
             printf("DONE!\n");
         }
@@ -123,10 +123,10 @@ int main (int argc, char *argv[]) {
             printf("Key manager is running...\n\n");
 
             // Attach the shared memory segment
-            List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
+            List_t *attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
 
             if(attached_shm_list == (List_t *) -1) {
-                errExit("<Key Manager> shmat failed");
+                err_exit("<Key Manager> shmat failed");
             }
 
             // Now-time value
@@ -136,7 +136,7 @@ int main (int argc, char *argv[]) {
             Node_t *current_node = attached_shm_list -> head;
 
             if(signal(SIGTERM, km_sig_handler) == SIG_ERR) {
-                errExit("<Key Manager> signal failed");
+                err_exit("<Key Manager> signal failed");
             }
 
             // This loop executes each 30 seconds
@@ -164,33 +164,33 @@ int main (int argc, char *argv[]) {
         // =============================================
 
         // Attach the server to the Shared Memory
-        List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
+        List_t *attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
 
         // FIFOCLIENT file descriptor
         int FIFOCLIENT;
 
         if(user_key != NULL) {
             if(attached_shm_list == (List_t *) -1) {
-                errExit("<Server> shmat failed");
+                err_exit("<Server> shmat failed");
             }
 
             // Inserts the new node in the shared memory
             insert_list(attached_shm_list, request -> id, user_key);
 
             // Opens FIFOCLIENT and add it to the FDT
-            FIFOCLIENT = open(path2ClientFIFO, O_RDWR, S_IRUSR);
+            FIFOCLIENT = open(path_to_client_FIFO, O_RDWR, S_IRUSR);
 
             // Checks if open happened
             if(FIFOCLIENT == -1) {
-                errExit("<Server> open FIFOCLIENT failed");
+                err_exit("<Server> open FIFOCLIENT failed");
             }
 
             // Writes the response on the FIFO
             if(write(FIFOCLIENT, user_key, sizeof(Response_t *)) == 0) {
-                errExit("<Server> write on FIFOSERVER failed");
+                err_exit("<Server> write on FIFOSERVER failed");
             }
         } else {
-            errExit("<Server> NULL user key");
+            err_exit("<Server> NULL user key");
         }
     }
 

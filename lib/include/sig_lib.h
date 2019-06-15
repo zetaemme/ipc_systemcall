@@ -8,7 +8,7 @@
 #include "./list_lib.h"
 #include "./err_lib.h"
 
-void server_sig_handler(int sig, List_t* shared_memory_list, int FIFOSERVER, int FIFOCLIENT, int shmid);
+void server_sig_handler(int sig, List_t* shared_memory_list, int FIFOSERVER, int FIFOCLIENT, int shm_id);
 void km_sig_handler(int sig, List_t* shared_memory_list);
 
 #endif

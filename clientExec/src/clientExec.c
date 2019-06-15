@@ -25,11 +25,11 @@ int main (int argc, char *argv[]) {
     }
 
     // Gets the shared memory id
-    key_t shmKey = ftok("../../clientReq-server/src/server.c", 's'); 
-    int shmid = shmget(shmKey, sizeof(Node_t *) * 100, S_IRUSR | S_IWUSR);
+    key_t shm_key = ftok("../../clientReq-server/src/server.c", 's'); 
+    int shm_id = shmget(shm_key, sizeof(Node_t *) * 100, S_IRUSR | S_IWUSR);
 
     // Attach the shared memory to the linked list
-    List_t *attached_shm_list = (List_t *) shmat(shmid, NULL, 0);
+    List_t *attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
 
     Node_t *current = attached_shm_list -> head;
 
@@ -46,22 +46,22 @@ int main (int argc, char *argv[]) {
     if(validity_flag == 1) {
         if(strcmp(service, "prt") == 0) {
             if(execl("stampa", "stampa", *args, (char *) NULL) == -1) {
-                errExit("<Exec> failed to execute 'Print'");
+                err_exit("<Exec> failed to execute 'Print'");
             }
         } else if(strcmp(service, "snd") == 0) {
             if(execl("invia", "invia", *args, (char *) NULL) == -1) {
-                errExit("<Exec> failed to execute 'Send'");
+                err_exit("<Exec> failed to execute 'Send'");
             }
         } else {
             if(execl("salva", "salva", *args, (char *) NULL) == -1) {
-                errExit("<Exec> failed to execute 'Save'");
+                err_exit("<Exec> failed to execute 'Save'");
             }
         }
     }
 
     // Detachs ClientExec from the Shared Memory
     if(shmdt(attached_shm_list) == -1) {
-        errExit("<ClientExec> shmdt failed");
+        err_exit("<ClientExec> shmdt failed");
     }
 
     return 0;

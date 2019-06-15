@@ -10,15 +10,15 @@
 
 int main (int argc, char *argv[]) {
     // Stores the message que key (first argument) in a local variable
-    int msgKey = atoi(argv[1]);
+    int msg_key = atoi(argv[1]);
 
     // Checks if the key is valid
-    if(msgKey <= 0) {
-        errExit("<Send> msgKey must be greater than 0");
+    if(msg_key <= 0) {
+        err_exit("<Send> msgKey must be greater than 0");
     }
 
     // Gets the message queue
-    int msqid = msgget(msgKey, S_IRUSR | S_IWUSR);
+    int msqid = msgget(msg_key, S_IRUSR | S_IWUSR);
 
     int i = 2;
     char *string2send = "";
@@ -45,7 +45,7 @@ int main (int argc, char *argv[]) {
 
     // Sends teh message
     if(msgsnd(msqid, message, sizeof(message), 0) == -1) {
-        errExit("<Send> msgsnd failed");
+        err_exit("<Send> msgsnd failed");
     }
 
     return 0;
