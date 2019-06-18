@@ -9,6 +9,7 @@ void str_slice(const char *src, char *dest, size_t start, size_t end) {
     }
 }
 
+// Turns the string lowercase
 void lower_case(char str[]) {
     for(int i = 0; str[i]; i++){
         str[i] = tolower(str[i]);

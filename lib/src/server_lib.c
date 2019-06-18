@@ -1,5 +1,4 @@
 #include "../include/server_lib.h"
-#include "../include/str_lib.h"
 
 // Generates a user_key
 void generate_key(Request_t *request, Response_t *response) {
@@ -54,10 +53,7 @@ int check_eq_data(Data_t *data1, Data_t *data2) {
 
 // Checks if the serivice is valid
 int validate_service(char service[]) {
-    // Turn the service lower case to universal check
-    lower_case(service);
-
-    if(strcmp(service, "stampa") < 0 || strcmp(service, "salva") < 0 || strcmp(service, "snvia") < 0) {
+    if(strcmp(service, "stampa") < 0 || strcmp(service, "salva") < 0 || strcmp(service, "invia") < 0) {
         return -1;
     }
 

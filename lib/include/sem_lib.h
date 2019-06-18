@@ -3,6 +3,8 @@
 
 #include <sys/sem.h>
 
+#include "./err_lib.h"
+
 union semun {
     int val;
     struct semid_ds *buf;
