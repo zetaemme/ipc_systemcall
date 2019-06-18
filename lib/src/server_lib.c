@@ -53,7 +53,7 @@ int check_eq_data(Data_t *data1, Data_t *data2) {
 
 // Checks if the serivice is valid
 int validate_service(char service[]) {
-    if(strcmp(service, "Stampa") < 0 || strcmp(service, "Salva") < 0 || strcmp(service, "Invia") < 0) {
+    if(strcmp(service, "stampa") < 0 || strcmp(service, "salva") < 0 || strcmp(service, "invia") < 0) {
         return -1;
     }
 

@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "./request_lib.h"
+#include "./str_lib.h"
 
 // Struct that defines server's response, using typedef for clean code 
 typedef struct Response_s {
