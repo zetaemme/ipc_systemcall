@@ -5,8 +5,6 @@
 #include <sys/ipc.h> 
 
 #include "../../lib/include/err_lib.h"
-#include "../../lib/include/str_lib.h"
-#include "../../lib/include/request_lib.h"
 #include "../../lib/include/server_lib.h"
 
 int main(int argc, char *argv[]) {
@@ -48,11 +46,14 @@ int main(int argc, char *argv[]) {
         scanf("%6s", service);
     } while(validate_service(service) == -1);
 
-    Request_t *request = NULL;
+    Request_t request;
+
+    // Turns service lower_case so I don't have to check for it later
+    lower_case(service);
 
     // Assigns the values to the Request
-    strcpy(request -> id, id);
-    strcpy(request -> service, service);
+    strcpy(request.id, id);
+    strcpy(request.service, service);
 
     printf("Opening FIFOSERVER...\t\t");
 
@@ -69,24 +70,24 @@ int main(int argc, char *argv[]) {
     }
 
     // Writes the request on the FIFOCLIENT
-    if(write(FIFOSERVER, request, sizeof(Request_t *)) != sizeof(request)) {
+    if(write(FIFOSERVER, &request, sizeof(Request_t *)) != sizeof(request)) {
         err_exit("<Client Request> write on FIFOSERVER failed");
         
     }
 
     sleep(3);
 
-    Response_t *user_key = NULL;
+    Response_t user_key;
 
     // Reads the resposnse from the FIFOCLIENT
-    if(read(FIFOCLIENT, user_key, sizeof(Response_t *)) == -1) {
+    if(read(FIFOCLIENT, &user_key, sizeof(Response_t *)) == -1) {
         err_exit("<Client Request> read from FIFOCLIENT failed");
         
     }
 
     // Prints the user_key
     printf("Key: ");
-    print_key(user_key);
+    print_key(&user_key);
     printf("\n");
     // ========================================
 
