@@ -1,9 +1,7 @@
 #include <fcntl.h>
 #include <string.h>
-
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/stat.h>
 
 #include "../../lib/include/err_lib.h"
 #include "../../lib/include/msg_lib.h"
@@ -18,7 +16,7 @@ int main (int argc, char *argv[]) {
     }
 
     // Gets the message queue
-    int msqid = msgget(msg_key, S_IRUSR | S_IWUSR);
+    int msqid = get_message_queue(msg_key);
 
     int i = 2;
     char *string_to_send = "";
