@@ -1,7 +1,7 @@
 #include <fcntl.h>
 #include <string.h>
-#include <signal.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -9,6 +9,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#include "../../lib/include/err_lib.h"
 #include "../../lib/include/server_lib.h"
 #include "../../lib/include/list_lib.h"
 #include "../../lib/include/sem_lib.h"
@@ -16,8 +17,10 @@
 // Global for the son's PID
 pid_t son_process_pid;
 
-// Flag to controle the while loop (volatile because it can change asyncronously)
+// Flag to control the while loop (volatile because it can change asyncronously)
 volatile int sig_caught = 0;
+
+// TODO Cercare un modo per gestire le global e sig_handler
 
 void sig_handler(int sig) {
     sig_caught = 1;
