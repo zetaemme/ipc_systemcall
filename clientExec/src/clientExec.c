@@ -26,11 +26,15 @@ int main (int argc, char *argv[]) {
     }
 
     // Gets the shared memory id
-    key_t shm_key = ftok("../../clientReq-server/src/server.c", 's'); 
+    key_t shm_key = ftok("../../clientReq-server/src/server.c", 'shm'); 
     int shm_id = shmget(shm_key, sizeof(Node_t *) * 100, S_IRUSR | S_IWUSR);
 
     // Attach the shared memory to the linked list
     List_t *attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
+
+    if(attached_shm_list != (List_t *)1) {
+        err_exit("<Exec> shmat failed");
+    }
 
     Node_t *current = attached_shm_list -> head;
 

@@ -15,6 +15,10 @@ int main (int argc, char *argv[]) {
         err_exit("<Send> msg_key must be greater than 0");
     }
 
+    if(argc < 3) {
+        err_exit("<Send> Not enough argumets");
+    }
+
     // Gets the message queue
     int msqid = get_message_queue(msg_key);
 
@@ -42,7 +46,9 @@ int main (int argc, char *argv[]) {
     strcpy(message.mtext, string_to_send);
 
     // Sends the message
-    send_message(msqid, &message, sizeof(message), 0);
+    send_message(msqid, &message);
+
+    printf("Message sent!\n\n");
 
     return 0;
 }

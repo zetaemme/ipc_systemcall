@@ -20,12 +20,28 @@ pid_t son_process_pid;
 // Flag to control the while loop (volatile because it can change asyncronously)
 volatile int sig_caught = 0;
 
-// TODO Cercare un modo per gestire le global e sig_handler
-
 int main (int argc, char *argv[]) {
     // Path to the fifo files
     static const char *path_to_client_FIFO = "./FIFO/FIFOCLIENT";
     static const char *path_to_server_FIFO = "./FIFO/FIFOSERVER";
+
+    // Signal set
+    sigset_t no_SIGTERM_set;
+
+    // Fill the signal set
+    sigfillset(&no_SIGTERM_set);
+
+    // Deletes SIGTERM from mySet
+    sigdelset(&no_SIGTERM_set, SIGTERM);
+
+    // Blocks all signals but SIGTERM
+    sigprocmask(SIGTERM, &no_SIGTERM_set, NULL);
+
+    // ========== SERVER OPERATION SECTION ==========
+    // sigHandler as handler for SIGTERM
+    if(signal(SIGTERM, sig_handler) == SIG_ERR) {
+        err_exit("<Server> signal failed");
+    }
 
     // Checks on error making FIFOSERVER
     printf("Creating FIFOSERVER...\t\t");
@@ -53,7 +69,7 @@ int main (int argc, char *argv[]) {
     printf("Generating shm key...\t\t");
 
     // Creates the Shared Memory key
-    key_t shm_key = ftok("src/server.c", 's');
+    key_t shm_key = ftok("src/server.c", 'shm');
 
     // Checks if ftok succesfully created a key
     if(shm_key == -1) {
@@ -74,33 +90,29 @@ int main (int argc, char *argv[]) {
         printf("DONE!\n");
     }
 
-    // TODO Togliere commento per utilizzare semafori
+    List_t *attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
+
+    printf("Generating sem key...");
+
     // Create the semaphore set
-    // int sem_id = semget(shm_key, 1, IPC_CREAT | S_IRUSR | S_IWUSR);
+    int sem_key = ftok("src/server.c", 'sem');
 
-    printf("Generating SigSet...\t\t");
-
-    // Signal set
-    sigset_t no_SIGTERM_set;
-
-    // Fill the signal set
-    sigfillset(&no_SIGTERM_set);
-
-    // Deletes SIGTERM from mySet
-    sigdelset(&no_SIGTERM_set, SIGTERM);
-
-    // Blocks all signals but SIGTERM
-    sigprocmask(SIG_SETMASK, &no_SIGTERM_set, NULL);
-
-    // ========== SERVER OPERATION SECTION ==========
-    // sigHandler as handler for SIGTERM
-    if(signal(SIGTERM, sig_handler) == SIG_ERR) {
-        err_exit("<Server> signal failed");
+    if(sem_key == -1) {
+        err_exit("<Server> semaphore ftok failed");
+    } else {
+        printf("DONE!\n");
     }
 
-    // ============================ MAIN EXECUTION ============================
+    int sem_id = semget(sem_key, 1, IPC_CREAT | S_IRUSR | S_IWUSR);
 
-    List_t *attached_shm_list;
+    union semun arg;
+    arg.val = 1;
+
+    if(semctl(sem_id, 0, SETVAL, arg) == -1) {
+        err_exit("<Server> semctl SETVAL failed");
+    } 
+
+    // ============================ MAIN EXECUTION ============================
 
     // Executes untill SIGTERM
     while(!sig_caught) {

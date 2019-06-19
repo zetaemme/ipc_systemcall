@@ -3,6 +3,8 @@
 
 #include <signal.h>
 
+#include <sys/types.h>
+
 #include "./err_lib.h"
 #include "./globals.h"
 
