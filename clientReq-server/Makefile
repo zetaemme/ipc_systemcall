@@ -1,7 +1,7 @@
 CFLAGS=-Wall -std=gnu99
 
 # list source code files for server executable
-SERVER_SRCS = src/server.c ../lib/src/err_lib.c ../lib/src/server_lib.c ../lib/src/list_lib.c ../lib/src/sem_lib.c
+SERVER_SRCS = src/server.c ../lib/src/err_lib.c ../lib/src/server_lib.c ../lib/src/list_lib.c ../lib/src/sem_lib.c ../lib/src/sig_lib.c
 
 # list source code files for client executable
 CLIENT_SRCS = src/clientReq.c ../lib/src/err_lib.c ../lib/src/str_lib.c ../lib/src/server_lib.c

@@ -1,7 +1,5 @@
 #include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
-#include <signal.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -13,6 +11,8 @@
 #include "../../lib/include/server_lib.h"
 #include "../../lib/include/list_lib.h"
 #include "../../lib/include/sem_lib.h"
+#include "../../lib/include/sig_lib.h"
+#include "../../lib/include/globals.h"
 
 // Global for the son's PID
 pid_t son_process_pid;
@@ -21,14 +21,6 @@ pid_t son_process_pid;
 volatile int sig_caught = 0;
 
 // TODO Cercare un modo per gestire le global e sig_handler
-
-void sig_handler(int sig) {
-    sig_caught = 1;
-
-    if(kill(son_process_pid, SIGTERM)) {
-        err_exit("<Signal Handler> kill failed");
-    }   
-}
 
 int main (int argc, char *argv[]) {
     // Path to the fifo files
