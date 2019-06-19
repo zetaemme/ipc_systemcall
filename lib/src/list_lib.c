@@ -10,6 +10,7 @@ void insert_list(List_t *list, char id[], Response_t *user_key) {
     strcpy(new_node -> value -> id, id);
     new_node -> value -> user_key = user_key;
     gettimeofday(&(new_node -> value) -> timestamp, NULL);
+    new_node -> value -> has_been_used = 0;
 
     // Checks for an empty list
     if(current == NULL){

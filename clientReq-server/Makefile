@@ -30,5 +30,6 @@ clientReq: $(CLIENT_OBJS)
 .PHONY: clean
 
 clean:
-	@rm -f src/*.o server clientReq ../lib/src/*.o ./FIFO/FIFOSERVER ./FIFO/FIFOCLIENT
+	@rm -f src/*.o server clientReq ../lib/src/*.o ./FIFO/*
+	@ipcrm -a
 	@echo "Removed object files and executables..."

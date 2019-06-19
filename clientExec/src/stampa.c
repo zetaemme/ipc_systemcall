@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <stdio.h>ù
+#include <stdio.h>
 
 #include "../../lib/include/err_lib.h"
 

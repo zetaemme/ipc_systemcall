@@ -21,6 +21,7 @@ typedef struct Data_s {
     char id[256];
     Response_t * user_key;
     struct timeval timestamp;
+    int has_been_used;
 } Data_t;
 
 void generate_key(Request_t *request, Response_t *response);

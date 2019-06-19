@@ -4,13 +4,17 @@
 #include <signal.h>
 
 #include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
 
 #include "./err_lib.h"
 #include "./globals.h"
 
-pid_t son_process_pid;
-volatile int sig_caught;
+const char *path_to_server_FIFO;
 
-void sig_handler(int sig);
+void server_sig_handler(int sig);
+void km_sig_handler(int sig);
 
 #endif

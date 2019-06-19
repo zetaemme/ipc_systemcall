@@ -8,9 +8,14 @@
 #include "../../lib/include/list_lib.h"
 #include "../../lib/include/str_lib.h"
 #include "../../lib/include/err_lib.h"
+#include "../../lib/include/sem_lib.h"
 
 int main (int argc, char *argv[]) {
     // argv[1] = id, argv[2] = user_key, argv[3] = args
+
+    if(argc < 4) {
+        err_exit("<Exec> Not enough arguments");
+    }
 
     // Slices the id to get the service reference part
     char service[4];
@@ -25,9 +30,27 @@ int main (int argc, char *argv[]) {
         j++;
     }
 
+    // Gets the shared memory key
+    printf("Generating shm key...\t\t");
+
+    key_t shm_key = ftok("../../clientReq-server/src/server.c", 1);
+
+    if(shm_key == -1) {
+        err_exit("\n<Exec> ftok failed");
+    } else {
+        printf("DONE!\n");
+    }
+
     // Gets the shared memory id
-    key_t shm_key = ftok("../../clientReq-server/src/server.c", 'shm'); 
+    printf("Getting Shared Memory...\t\t");
+
     int shm_id = shmget(shm_key, sizeof(Node_t *) * 100, S_IRUSR | S_IWUSR);
+
+    if(shm_id == -1) {
+        err_exit("\n<Exec> shmget failed");
+    } else {
+        printf("DONE!\n");
+    }
 
     // Attach the shared memory to the linked list
     List_t *attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
@@ -36,18 +59,47 @@ int main (int argc, char *argv[]) {
         err_exit("<Exec> shmat failed");
     }
 
+    // Gets the sem key
+    printf("Generating sem key...\t\t");
+
+    int sem_key = ftok("../../clientReq-server/src/server.c", 2);
+
+    if(sem_key == -1) {
+        err_exit("\n<Exec> ftok failed");
+    } else {
+        printf("DONE!\n");
+    }
+
+    // Gets the semaphore
+    printf("Getting semaphore...\t\t");
+
+    int sem_id = semget(sem_key, 1, S_IRUSR | S_IWUSR);
+
+    if(sem_id == -1) {
+        err_exit("\n<Exec> semget failed");
+    } else {
+        printf("DONE!\n");
+    }
+
+    // Semaphore protects the operations below
+    semOp(sem_id, 0, -1);
+
+    // Current node on the shared memory list
     Node_t *current = attached_shm_list -> head;
 
     int validity_flag = 0;
 
     // Checks for user_key validity
     while(current -> next != NULL) {
-        if(strcmp(userkey_to_string(current -> value -> user_key), argv[2]) == 0) {
+        if(strcmp(userkey_to_string(current -> value -> user_key), argv[2]) == 0 && current -> value -> has_been_used != 0) {
             validity_flag = 1;
+            current -> value -> has_been_used = 1;
         }
-    } 
+    }
 
-    // Simula validazione user_key(argv[2])
+    // Shared Memory is now accessible to everyone who wants
+    semOp(sem_id, 0, 1); 
+
     if(validity_flag == 1) {
         if(strcmp(service, "prt") == 0) {
             if(execl("stampa", "stampa", *args, (char *) NULL) == -1) {
@@ -62,6 +114,8 @@ int main (int argc, char *argv[]) {
                 err_exit("<Exec> failed to execute 'Save'");
             }
         }
+    } else {
+        err_exit("<Exec> Error, invalid user key!");
     }
 
     // Detachs ClientExec from the Shared Memory
