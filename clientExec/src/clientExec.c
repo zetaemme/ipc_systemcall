@@ -89,9 +89,15 @@ int main (int argc, char *argv[]) {
 
     int validity_flag = 0;
 
+    // Every int will fit into a 12 chars array without overflow
+    char string_userkey[12]; 
+
     // Checks for user_key validity
     while(current -> next != NULL) {
-        if(strcmp(userkey_to_string(current -> value -> user_key), argv[2]) == 0 && current -> value -> has_been_used != 0) {
+        // Converts user_key into string
+        sprintf(string_userkey, "%d", current -> value -> user_key -> user_key);
+
+        if(strcmp(string_userkey, argv[2]) == 0 && current -> value -> has_been_used != 0) {
             validity_flag = 1;
             current -> value -> has_been_used = 1;
         }

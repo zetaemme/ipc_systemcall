@@ -23,7 +23,7 @@ void server_sig_handler(int sig) {
         }
 
         // Removes Shared Memory
-        printf("Removing Shared Memory...\t\t");
+        printf("Removing Shared Memory...\t");
 
         if(shmdt(attached_shm_list) == -1 || shmctl(shm_id, IPC_RMID, NULL) == -1) {
             err_exit("\n<Server Signal Handler> failed to remove Shared Memory");

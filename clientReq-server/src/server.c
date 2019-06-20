@@ -43,7 +43,7 @@ int main (int argc, char *argv[]) {
     sigdelset(&no_SIGTERM_set, SIGTERM);
 
     // Blocks all signals but SIGTERM
-    sigprocmask(SIGTERM, &no_SIGTERM_set, NULL);
+    sigprocmask(SIG_SETMASK, &no_SIGTERM_set, NULL);
 
     // ========== SERVER OPERATION SECTION ==========
     // sigHandler as handler for SIGTERM
@@ -134,12 +134,12 @@ int main (int argc, char *argv[]) {
             err_exit("<Key Manager> shmat failed");
         }
 
-        // Now-time value
-        struct timeval current_time;
-
         // This loop executes each 30 seconds
         while(1) {
             sleep(30);
+
+            // Now-time value
+            struct timeval current_time;
 
             // Semaphore protects the operations below
             semOp(sem_id, 0, -1);
@@ -183,12 +183,12 @@ int main (int argc, char *argv[]) {
             }
 
             // Request read from FIFO
-            Request_t request;
+            Request_t request[1];
 
             printf("Reading from FIFOSERVER...\t");
 
             // Reads the request from FIFOSERVER
-            if(read(FIFOSERVER, &request, sizeof(request)) == -1) {
+            if(read(FIFOSERVER, request, sizeof(request)) == -1) {
                 err_exit("<Server> read from FIFOSERVER failed");
             } else {
                 printf("DONE!\n");
@@ -198,15 +198,13 @@ int main (int argc, char *argv[]) {
             Response_t user_key;
 
             // Generate user_key
-            if(strcmp(request.service, "stampa") >= 0 || strcmp(request.service, "salva") >= 0 || strcmp(request.service, "invia") >= 0) {
-                generate_key(&request, &user_key);
-            }
+            generate_key(request, &user_key);
 
             // Semaphore protects the operations below
             semOp(sem_id, 0, -1);
 
             // Inserts the new node in the shared memory
-            insert_list(attached_shm_list, request.id, &user_key);
+            insert_list(attached_shm_list, request -> id, &user_key);
 
             // Shared Memory is now accessible to everyone who wants
             semOp(sem_id, 0, 1);
@@ -219,8 +217,13 @@ int main (int argc, char *argv[]) {
                 err_exit("<Server> open FIFOCLIENT failed");
             }
 
+            // Write buffer
+            Response_t bW[1];
+
+            bW -> user_key = user_key.user_key; 
+
             // Writes the response on the FIFO
-            if(write(FIFOCLIENT, &user_key, sizeof(user_key)) == 0) {
+            if(write(FIFOCLIENT, bW, sizeof(bW)) == 0) {
                 err_exit("<Server> write on FIFOSERVER failed");
             }
 

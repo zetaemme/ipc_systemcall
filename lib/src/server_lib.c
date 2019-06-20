@@ -5,28 +5,19 @@ void generate_key(Request_t *request, Response_t *response) {
     // Init random seed
     srand(time(NULL));
 
-    // Generates 4 random integers
-    for(int i = 0; i < 4; i++) {
-        response -> user_key_numeric[i] = rand() % 10;
-    }
-
-    // Checks for service type and assigns service part of user_key
-    if(strcmp(request -> service, "Stampa") == 0) {
-        strcpy(response -> user_key_service, "prt");
-    } else if(strcmp(request -> service, "Salva") == 0) {
-        strcpy(response -> user_key_service, "sav");
+    /*  Checks for service type and assigns service part of user_key
+        First digit is:
+            1) Service -> Stampa
+            2) Service -> Salva
+            3) Service -> Invia
+    */
+    if(strcmp(request -> service, "stampa") == 0) {
+        response -> user_key = 10000 + rand() % 9000 + 1000;
+    } else if(strcmp(request -> service, "salva") == 0) {
+        response -> user_key = 20000 + rand() % 9000 + 1000;
     } else {
-        strcpy(response -> user_key_service, "snd");
+        response -> user_key = 30000 + rand() % 9000 + 1000;
     }
-}
-
-// Function to print user_key
-void print_key(Response_t *response) {
-    for(int i = 0; i < 4; i++) {
-        printf("%i", response -> user_key_numeric[i]);
-    }
-
-    printf("%s\n", response -> user_key_service);
 }
 
 // Checks if five minutes difference sussist between 2 timestamps
@@ -41,7 +32,7 @@ int check_five_min_diff(struct timeval *current, struct timeval *data_timestamp)
 // Compare two different data
 int check_eq_data(Data_t *data1, Data_t *data2) {
     if(strcmp(data1 -> id, data2 -> id) == 0 && 
-        strcmp(userkey_to_string(data1 -> user_key), userkey_to_string(data2 -> user_key)) == 0 && 
+        data1 -> user_key -> user_key == data2 -> user_key -> user_key && 
         data1 -> timestamp.tv_sec == data2 -> timestamp.tv_sec
       ){
 
@@ -53,23 +44,9 @@ int check_eq_data(Data_t *data1, Data_t *data2) {
 
 // Checks if the serivice is valid
 int validate_service(char service[]) {
-    if(strcmp(service, "stampa") < 0 || strcmp(service, "salva") < 0 || strcmp(service, "invia") < 0) {
-        return -1;
+    if(strcmp(service, "stampa") == 0 || strcmp(service, "salva") == 0 || strcmp(service, "invia") == 0) {
+        return 1;
     }
 
-    return 1;
-}
-
-// Coverts *user_key to a string
-char *userkey_to_string(Response_t *user_key) { 
-    char numeric[5];
-    
-    // Converts int array into string
-    for(int i = 0; i < 5; i++) {
-        numeric[i] = user_key -> user_key_numeric[i] + '0';
-    }
-
-    numeric[4] = '\0';
-
-    return strcat(numeric, user_key -> user_key_service);
+    return -1;
 }
