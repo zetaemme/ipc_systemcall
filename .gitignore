@@ -1,2 +1,3 @@
 .DS_Store
 .vscode
+!/clientReq-server/FIFO
