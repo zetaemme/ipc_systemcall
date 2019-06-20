@@ -9,6 +9,7 @@
 #include "../../lib/include/str_lib.h"
 #include "../../lib/include/err_lib.h"
 #include "../../lib/include/sem_lib.h"
+#include "../../lib/include/exec_lib.h"
 
 int main (int argc, char *argv[]) {
     // argv[1] = id, argv[2] = user_key, argv[3] = args
@@ -17,9 +18,7 @@ int main (int argc, char *argv[]) {
         err_exit("<Exec> Not enough arguments");
     }
 
-    // Slices the id to get the service reference part
-    char service[4];
-    str_slice(argv[1], service, 4, 8);
+    int integer_user_key = atoi(argv[2]);
 
     // Creating a subset array containing the arguments for the execl syscall
     char **args = (char **) malloc((argc - 3) * sizeof(char));
@@ -81,6 +80,8 @@ int main (int argc, char *argv[]) {
         printf("DONE!\n");
     }
 
+    // =========== OPERAZIONE PROTETTA ===========
+
     // Semaphore protects the operations below
     semOp(sem_id, 0, -1);
 
@@ -94,24 +95,25 @@ int main (int argc, char *argv[]) {
 
     // Checks for user_key validity
     while(current -> next != NULL) {
-        // Converts user_key into string
-        sprintf(string_userkey, "%d", current -> value -> user_key -> user_key);
-
-        if(strcmp(string_userkey, argv[2]) == 0 && current -> value -> has_been_used != 0) {
+        if(current -> user_key == integer_user_key && current ->  has_been_used != 0) {
             validity_flag = 1;
-            current -> value -> has_been_used = 1;
+            current -> has_been_used = 1;
         }
     }
 
     // Shared Memory is now accessible to everyone who wants
-    semOp(sem_id, 0, 1); 
+    semOp(sem_id, 0, 1);
+
+    // =========================================
+
+    int service = get_first_digit(integer_user_key); 
 
     if(validity_flag == 1) {
-        if(strcmp(service, "prt") == 0) {
+        if(service == 1) {
             if(execl("stampa", "stampa", *args, (char *) NULL) == -1) {
                 err_exit("<Exec> failed to execute 'Print'");
             }
-        } else if(strcmp(service, "snd") == 0) {
+        } else if(service == 2) {
             if(execl("invia", "invia", *args, (char *) NULL) == -1) {
                 err_exit("<Exec> failed to execute 'Send'");
             }

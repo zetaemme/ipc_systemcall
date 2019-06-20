@@ -121,7 +121,7 @@ int main (int argc, char *argv[]) {
     
     if(son_process_pid == 0) {
         // ================= KEYMANAGER ===============
-        printf("Key manager is running...\n\n");
+        printf("\nKey manager is running...\n\n");
 
         if(signal(SIGTERM, km_sig_handler) == SIG_ERR) {
             err_exit("<Key Manager> signal failed");
@@ -134,12 +134,12 @@ int main (int argc, char *argv[]) {
             err_exit("<Key Manager> shmat failed");
         }
 
+        // Current timestamp
+        time_t current_time;
+
         // This loop executes each 30 seconds
         while(1) {
             sleep(30);
-
-            // Now-time value
-            struct timeval current_time;
 
             // Semaphore protects the operations below
             semOp(sem_id, 0, -1);
@@ -148,10 +148,10 @@ int main (int argc, char *argv[]) {
             Node_t *current_node = attached_shm_list -> head;
 
             // Gets the current time
-            gettimeofday(&current_time, NULL);
+            current_time = get_timestamp() - 300;
 
             while(current_node -> next != NULL) {
-                if(check_five_min_diff(&current_time, &(current_node -> value) -> timestamp)) {
+                if(current_node -> timeval < current_time && current_node -> timeval != 0) {
                     delete_from_list(km_attached_shm_list, current_node);
 
                     current_node = current_node -> next;
@@ -183,13 +183,13 @@ int main (int argc, char *argv[]) {
             }
 
             // Request read from FIFO
-            Request_t request[1];
+            Request_t bR[1];
 
             printf("Reading from FIFOSERVER...\t");
 
             // Reads the request from FIFOSERVER
-            if(read(FIFOSERVER, request, sizeof(request)) == -1) {
-                err_exit("<Server> read from FIFOSERVER failed");
+            if(read(FIFOSERVER, bR, sizeof(bR)) == -1) {
+                err_exit("\n<Server> read from FIFOSERVER failed");
             } else {
                 printf("DONE!\n");
             }
@@ -197,17 +197,38 @@ int main (int argc, char *argv[]) {
             // Response containing the user key
             Response_t user_key;
 
+            Request_t request;
+
+            strcpy(request.id, bR -> id);
+            strcpy(request.service, bR -> service);
+
             // Generate user_key
-            generate_key(request, &user_key);
+            printf("Generating key...\t\t");
+
+            if(generate_key(request.service, &user_key) != 1) {
+                err_exit("\n<Server> generate key error");
+            } else {
+                printf("DONE!\n");
+            } 
+
+            // =========== OPERAZIONE PROTETTA ===========
 
             // Semaphore protects the operations below
             semOp(sem_id, 0, -1);
 
+
             // Inserts the new node in the shared memory
-            insert_list(attached_shm_list, request -> id, &user_key);
+            printf("Adding key to shared memory...\n");
+
+            // TODO SegFault sempre
+            insert_list(attached_shm_list, request.id, user_key.user_key);
+
+            // ========================================================
 
             // Shared Memory is now accessible to everyone who wants
             semOp(sem_id, 0, 1);
+
+            // =========================================
         
             // FIFOCLIENT file descriptor
             int FIFOCLIENT = open(path_to_client_FIFO, O_WRONLY);

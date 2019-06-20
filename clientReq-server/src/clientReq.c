@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
         err_exit("<Client Request> Invalid service!");
     }
 
-    printf("\n\n");
+    printf("\n");
 
     Request_t request;
 
