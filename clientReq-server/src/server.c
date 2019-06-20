@@ -17,7 +17,7 @@
 pid_t son_process_pid;
 
 // Global for the Shared Memory list
-List_t *attached_shm_list;
+Node_t *attached_shm_list;
 
 // Global for Shared Memory id
 int shm_id;
@@ -63,7 +63,7 @@ int main (int argc, char *argv[]) {
     printf("Generating shm key...\t\t");
 
     // Creates the Shared Memory key
-    key_t shm_key = ftok("src/server.c", 1);
+    key_t shm_key = ftok("src/server.c", 300);
 
     // Checks if ftok succesfully created a key
     if(shm_key == -1) {
@@ -75,7 +75,7 @@ int main (int argc, char *argv[]) {
     printf("Getting Shared Memory...\t");
 
     // Creates the shared memory
-    shm_id = shmget(shm_key, sizeof(Node_t *) * 100, IPC_CREAT | S_IRUSR | S_IWUSR);
+    shm_id = shmget(shm_key, sizeof(Node_t) * 20, IPC_CREAT | S_IRUSR | S_IWUSR);
 
     // Checks if the shared memory was successfully created
     if(shm_id == -1) {
@@ -85,16 +85,16 @@ int main (int argc, char *argv[]) {
     }
 
     // Shared Memory list
-    attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
+    attached_shm_list = (Node_t *) shmat(shm_id, NULL, 0);
 
-    if(attached_shm_list == (List_t *) -1) {
+    if(attached_shm_list == (Node_t *) -1) {
         err_exit("<Server> shmat failed");
     }
 
     // Create the semaphore set key
     printf("Generating sem key...\t\t");
 
-    int sem_key = ftok("src/server.c", 2);
+    key_t sem_key = ftok("src/clientReq.c", 100);
 
     // Checks if the key has been generated
     if(sem_key == -1) {
@@ -128,9 +128,9 @@ int main (int argc, char *argv[]) {
         }
 
         // Attach the shared memory segment
-        List_t *km_attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
+        Node_t *km_attached_shm_list = (Node_t *) shmat(shm_id, NULL, 0);
 
-        if(km_attached_shm_list == (List_t *) -1) {
+        if(km_attached_shm_list == (Node_t *) -1) {
             err_exit("<Key Manager> shmat failed");
         }
 
@@ -141,27 +141,29 @@ int main (int argc, char *argv[]) {
         while(1) {
             sleep(30);
 
+            // =========== OPERAZIONE PROTETTA ===========
+
             // Semaphore protects the operations below
             semOp(sem_id, 0, -1);
 
             // Current node of the list
-            Node_t *current_node = attached_shm_list -> head;
+            Node_t *current_node = attached_shm_list;
 
-            // Gets the current time
-            current_time = get_timestamp() - 300;
+            while(current_node != attached_shm_list + 20) {
+                // Gets the current time
+                current_time = get_timestamp() - 300;
 
-            while(current_node -> next != NULL) {
                 if(current_node -> timeval < current_time && current_node -> timeval != 0) {
-                    delete_from_list(km_attached_shm_list, current_node);
-
-                    current_node = current_node -> next;
-                } else {
-                    current_node = current_node -> next;
+                    delete_from_shared_memory(current_node);
                 }
+
+                ++current_node;
             }
 
             // Shared Memory is now accessible to everyone who wants
             semOp(sem_id, 0, 1);
+
+            // =========================================
         }
         // ============================================       
     } else if(son_process_pid == -1) {
@@ -216,15 +218,8 @@ int main (int argc, char *argv[]) {
             // Semaphore protects the operations below
             semOp(sem_id, 0, -1);
 
-
             // Inserts the new node in the shared memory
-            printf("Adding key to shared memory...\t");
-
-            if(insert_list(attached_shm_list, request.id, user_key.user_key) != 1) {
-                err_exit("\n<Server> insert_list failed");
-            } else {
-                printf("DONE!\n");
-            }
+            write_in_shared_memory(attached_shm_list, request.id, user_key.user_key);
 
             // Shared Memory is now accessible to everyone who wants
             semOp(sem_id, 0, 1);

@@ -1,37 +1,26 @@
 #include "../include/list_lib.h"
 
 // Instert a new node in the data list
-int insert_list(List_t *list, char id[], int user_key) {
-    // Node to insert and iteration node
-    Node_t *current = list -> head;
-    Node_t new_node;
+void write_in_shared_memory(Node_t *shm_list, char id[], int user_key) {
+    Node_t *current = shm_list;
+    int i;
 
-    // Inits the node to insert
-    strcpy(new_node.id, id);
-    new_node.user_key = user_key;
-    new_node.timeval = get_timestamp();
-    new_node.has_been_used = 0;
-    
-    // Checks for an empty list
-    if(current == NULL){
-        list -> head = &new_node;
-        new_node.next = NULL;
-
-        return 1;
-    } else {
-        // Goes to the last node
-        while(current -> next != NULL) {
-            current = current -> next;
+    for(i = 0; i < 100; i++) {
+        if((strcmp(current -> id, "") != 0 && current -> has_been_used == 1) || strcmp(current -> id, "") == 0) {
+            break;
         }
 
-        // Assigns the new node on the tail
-        current -> next = &new_node;
-        current -> next -> next = NULL;
-
-        return 1;
+        current++;
     }
 
-    return 0;
+    if(i == 99) {
+        printf("\n<Shared Memory> full memory");
+    }
+
+    strcpy(current -> id, id);
+    current -> user_key = user_key;
+    current -> timeval = get_timestamp();
+    current -> has_been_used = 0;
 }
 
 // Get seconds from the start of the day
@@ -59,37 +48,17 @@ int check_eq_data(Node_t *data1, Node_t *data2) {
 }
 
 //Delete a node from the data list
-void delete_from_list(List_t *list, Node_t *node) {
-    // Iteration nodes
-    Node_t *current = list -> head;
-    Node_t *previous = NULL;
-    
-    // If we have a 1 element list and that element is the designed element
-    if(current -> next == NULL && check_eq_data(current, node)) {
-        current = NULL;
-    } else {
-        // For each node in the list
-        while(current -> next != NULL) {
-            // Checks if it is the designed node
-            if(check_eq_data(current, node)) {
-                if(current == list -> head) {
-                    list -> head = current -> next;
-                    current = current -> next;
-                } else {
-                    previous -> next = current -> next;
-                    current = previous -> next;
-                }
-            } else {
-                current = current -> next;
-            }
-        }
-    }
+void delete_from_shared_memory(Node_t *node) {
+    node -> has_been_used = 0;
 }
 
 void print_node(Node_t *node) {
-    printf("Node:\n");
-    printf("\n%s\n", node -> id);
-    printf("%i\n", node -> user_key);
-    printf("%li\n", node -> timeval);
-    printf("%i\n", node -> has_been_used);
+    printf("ID: %s\t\t", node -> id);
+    printf("KEY: %i\t\t", node -> user_key);
+    printf("TIME: %li\t\t", node -> timeval);
+    printf("USED: %i\n", node -> has_been_used);
+}
+
+bool has_been_used(Node_t *node) {
+    return node -> has_been_used == 0;
 }

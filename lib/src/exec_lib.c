@@ -18,7 +18,7 @@ int get_first_digit(int n) {
 // Converts argv (from third to last) into a single string
 char *args_to_string(char *args[]) {
     int length = args_size(args);
-    char *args_string = (char *) malloc((length * sizeof(char)) + 1);
+    char *args_string = (char *) malloc(length * sizeof(char) + 1);
 
     int i = 3;
     while(args[i] != NULL) {
@@ -46,4 +46,18 @@ int args_size(char *args[]) {
     }
 
     return s;
+}
+
+Node_t *get_node(Node_t *shm_list, char *id, int user_key){
+    Node_t *current = shm_list;
+
+    while(current != shm_list + 100){
+        if(strcmp(current -> id, id) == 0 && current -> user_key == user_key){
+            return current;
+        }
+        ++current;
+    }
+
+    return NULL;
+
 }
