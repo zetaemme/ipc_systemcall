@@ -9,10 +9,11 @@
 
 int main(int argc, char *argv[]) { 
     // Generate the new file's filename
-    char *filename = strcat(argv[0], ".txt");
+    char filename[256]; 
+    sprintf(filename, "%s.txt", argv[1]);
 
-    if(argc < 3) {
-        err_exit("<Save> Not enough arguments");
+    if(argc < 3){
+    	err_exit("<Save> Not enough arguments!");
     }
 
     printf("Creating file...\t\t");

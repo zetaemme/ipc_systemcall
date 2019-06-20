@@ -1,7 +1,7 @@
 #include "../include/msg_lib.h"
 
-void send_message(int msqid, Message_t *msg) {
-    if(msgsnd(msqid, msg, sizeof(msg -> mtext), 0) == -1) {
+void send_message(int msq_id, Message_t *msg) {
+    if(msgsnd(msq_id, msg, sizeof(msg -> mtext), 0) == -1) {
         err_exit("<Send> msgsnd failed");
     }
 }

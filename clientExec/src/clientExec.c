@@ -13,12 +13,11 @@
 #include "../../lib/include/exec_lib.h"
 
 int main (int argc, char *argv[]) {
-    // argv[1] = id, argv[2] = user_key, argv[3] = args
-
     if(argc < 4) {
-        err_exit("<Exec> Not enough arguments");
+        err_exit("<Exec> Not enough argumets");
     }
 
+    // argv[1] = id, argv[2] = user_key, argv[3] = args
     int integer_user_key = atoi(argv[2]);
 
     // ottengo la chiave per il segmento di memoria condivisa
@@ -77,21 +76,43 @@ int main (int argc, char *argv[]) {
 
     char *args = args_to_string(argv);
 
-    int service = get_first_digit(integer_user_key); 
+    int choice = get_first_digit(integer_user_key);
 
-    if(service == 1) {
-        if(execlp("./stampa", "./stampa", *args, (char *) NULL) == -1) {
-            err_exit("<Exec> failed to execute 'Print'");
-        }
-    } else if(service == 2) {
-        if(execlp("./invia", "./invia", *args, (char *) NULL) == -1) {
-            err_exit("<Exec> failed to execute 'Send'");
-        }
-    } else {
-        if(execlp("./salva", "./salva", *args, (char *) NULL) == -1) {
-            err_exit("<Exec> failed to execute 'Save'");
-        }
+    switch(choice){
+    	case 1:{
+            if(execlp("./stampa", "./stampa", args, (char*)NULL) == -1){
+                err_exit("execlp failure");
+            }
+
+            break;            
+    	}
+    	case 2:{
+            char filename[100];
+    		printf("Insert file's name: ");
+    		scanf("%s", filename);
+
+    		if(execlp("./salva", "./salva", filename, args, (char*)NULL) == -1){
+                err_exit("execlp failure");
+    		}
+
+    		break;
+    	}
+	   	default:{
+            int msq_key;
+            printf("Insert Message Queue's key: ");
+            scanf("%i", &msq_key);
+
+            // Converts msq_key into string
+            char key_str[30];
+            sprintf(key_str, "%i", msq_key);
+
+    		if(execlp("./invia", "./invia", key_str, args, (char*)NULL) == -1){
+                err_exit("execlp failure");
+            }
+
+    		break;
+    	}
     }
-
+	   	    
     return 0;
 }
