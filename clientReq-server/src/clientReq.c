@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ipc.h> 
 
@@ -14,32 +13,26 @@ const char *path_to_server_FIFO;
 const char *path_to_client_FIFO;
 
 int main(int argc, char *argv[]) {
-    char id[256], service[7];
+    Request_t request;
 
     path_to_server_FIFO = "./FIFO/FIFOSERVER";
     path_to_client_FIFO = "./FIFO/FIFOCLIENT";
 
     // ========== KEY GENERATION ==========
     printf("■■■■■■■■■■■■■■■  Welcome!  ■■■■■■■■■■■■■■■\n\nServices:\n1) Stampa\n2) Salva\n3) Invia\n\nID: ");
-    scanf("%255s", id);
+    scanf("%255s", request.id);
 
     printf("Service: ");
-    scanf("%6s", service);
+    scanf("%6s", request.service);
 
     // Turns service lower_case so I don't have to check for it later
-    lower_case(service);
+    lower_case(request.service);
 
-    if(validate_service(service) == -1) {
+    if(validate_service(request.service) == -1) {
         err_exit("<Client Request> Invalid service!");
     }
 
     printf("\n");
-
-    Request_t request;
-
-    // Assigns the values to the Request
-    strcpy(request.id, id);
-    strcpy(request.service, service);
 
     // Creates FIFOCLIENT
     printf("Creating FIFOCLIENT...\t\t");
@@ -76,16 +69,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Closes FIFOSERVER file descriptor
-    if(close(FIFOSERVER) == -1) {
-        err_exit("<Client Request> close FIFOSERVER failed");
-    }
-
-    Response_t user_key[0];
+    close(FIFOSERVER);
 
     // Opens FIFOCLIENT/FIFOSERVER and place them into FDT
     printf("Opening FIFOCLIENT...\t\t");
 
-    int FIFOCLIENT = open(path_to_client_FIFO, O_RDWR, S_IRUSR);
+    int FIFOCLIENT = open(path_to_client_FIFO, O_RDONLY);
 
     // Checks on errors opning FIFOCLIENT/FIFOSERVER
     if(FIFOCLIENT == -1) {
@@ -94,23 +83,21 @@ int main(int argc, char *argv[]) {
         printf("DONE!\n");
     }
 
+    Response_t bR[1];
+
     // Reads the resposnse from the FIFOCLIENT
     printf("Reading from FIFOCLIENT...\t");
 
-    if(read(FIFOCLIENT, user_key, sizeof(user_key)) == -1) {
+    if(read(FIFOCLIENT, bR, sizeof(bR)) == -1) {
         err_exit("\n<Client Request> read from FIFOCLIENT failed"); 
     } else {
         printf("DONE!\n");
     }
 
-    // Prints the user_key
-    printf("\nKey: ");
-    printf("%i\n", user_key -> user_key);
+    int key = bR[0].user_key;
 
-    // Checks on errors closing FIFOCLIENT file descriptor
-    if(close(FIFOCLIENT) == -1) {
-        err_exit("<Client Request> close FIFOCLIENT failed");        
-    }
+    // Prints the user_key
+    printf("\nUser Key: %i\n", key);
 
     // Checks fo errors unlinking the FIFO
     if(unlink(path_to_client_FIFO) == -1) {

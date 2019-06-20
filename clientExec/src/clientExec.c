@@ -20,19 +20,10 @@ int main (int argc, char *argv[]) {
 
     int integer_user_key = atoi(argv[2]);
 
-    // Creating a subset array containing the arguments for the execl syscall
-    char **args = (char **) malloc((argc - 3) * sizeof(char));
-
-    int j = 0;
-    for(int i = 3; i < argc; i++) {
-        strcpy(args[j], argv[i]);
-        j++;
-    }
-
     // Gets the shared memory key
     printf("Generating shm key...\t\t");
 
-    key_t shm_key = ftok("../../clientReq-server/src/server.c", 1);
+    key_t shm_key = ftok("../clientReq-server/src/server.c", 1);
 
     if(shm_key == -1) {
         err_exit("\n<Exec> ftok failed");
@@ -54,14 +45,14 @@ int main (int argc, char *argv[]) {
     // Attach the shared memory to the linked list
     List_t *attached_shm_list = (List_t *) shmat(shm_id, NULL, 0);
 
-    if(attached_shm_list != (List_t *)1) {
+    if(attached_shm_list != (List_t *) 1) {
         err_exit("<Exec> shmat failed");
     }
 
     // Gets the sem key
     printf("Generating sem key...\t\t");
 
-    int sem_key = ftok("../../clientReq-server/src/server.c", 2);
+    int sem_key = ftok("../clientReq-server/src/server.c", 2);
 
     if(sem_key == -1) {
         err_exit("\n<Exec> ftok failed");
@@ -90,9 +81,6 @@ int main (int argc, char *argv[]) {
 
     int validity_flag = 0;
 
-    // Every int will fit into a 12 chars array without overflow
-    char string_userkey[12]; 
-
     // Checks for user_key validity
     while(current -> next != NULL) {
         if(current -> user_key == integer_user_key && current ->  has_been_used != 0) {
@@ -106,19 +94,22 @@ int main (int argc, char *argv[]) {
 
     // =========================================
 
+    // TODO Creare stringa di argomenti
+    char *args = args_to_string(argv);
+
     int service = get_first_digit(integer_user_key); 
 
     if(validity_flag == 1) {
         if(service == 1) {
-            if(execl("stampa", "stampa", *args, (char *) NULL) == -1) {
+            if(execl("./stampa", "./stampa", *args, (char *) NULL) == -1) {
                 err_exit("<Exec> failed to execute 'Print'");
             }
         } else if(service == 2) {
-            if(execl("invia", "invia", *args, (char *) NULL) == -1) {
+            if(execl("./invia", "./invia", *args, (char *) NULL) == -1) {
                 err_exit("<Exec> failed to execute 'Send'");
             }
         } else {
-            if(execl("salva", "salva", *args, (char *) NULL) == -1) {
+            if(execl("./salva", "./salva", *args, (char *) NULL) == -1) {
                 err_exit("<Exec> failed to execute 'Save'");
             }
         }

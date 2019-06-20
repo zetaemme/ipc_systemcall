@@ -1,7 +1,7 @@
 #include "../include/list_lib.h"
 
 // Instert a new node in the data list
-void insert_list(List_t *list, char id[], int user_key) {
+int insert_list(List_t *list, char id[], int user_key) {
     // Node to insert and iteration node
     Node_t *current = list -> head;
     Node_t new_node;
@@ -11,13 +11,13 @@ void insert_list(List_t *list, char id[], int user_key) {
     new_node.user_key = user_key;
     new_node.timeval = get_timestamp();
     new_node.has_been_used = 0;
-
-    print_node(&new_node);
     
     // Checks for an empty list
     if(current == NULL){
         list -> head = &new_node;
         new_node.next = NULL;
+
+        return 1;
     } else {
         // Goes to the last node
         while(current -> next != NULL) {
@@ -27,7 +27,11 @@ void insert_list(List_t *list, char id[], int user_key) {
         // Assigns the new node on the tail
         current -> next = &new_node;
         current -> next -> next = NULL;
+
+        return 1;
     }
+
+    return 0;
 }
 
 // Get seconds from the start of the day

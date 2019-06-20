@@ -20,7 +20,7 @@ typedef struct List_s {
     Node_t *head;
 } List_t;
 
-void insert_list(List_t *list, char id[], int user_key);
+int insert_list(List_t *list, char id[], int user_key);
 int get_timestamp();
 int check_eq_data(Node_t *data1, Node_t *data2);
 void delete_from_list(List_t *list, Node_t *node);

@@ -173,11 +173,11 @@ int main (int argc, char *argv[]) {
             printf("Opening FIFOSERVER...\t\t");
 
             // FIFOSERVER file descriptor
-            int FIFOSERVER = open(path_to_server_FIFO, O_RDONLY);
+            int FIFOSERVER = open(path_to_server_FIFO, O_RDWR);
           
             // Checks on errors opning FIFOCLIENT/FIFOSERVER
             if(FIFOSERVER == -1) {
-                err_exit("<Client Request> open FIFOSERVER failed");
+                err_exit("\n<Client Request> open FIFOSERVER failed");
             } else {
                 printf("DONE!\n");
             }
@@ -218,24 +218,29 @@ int main (int argc, char *argv[]) {
 
 
             // Inserts the new node in the shared memory
-            printf("Adding key to shared memory...\n");
+            printf("Adding key to shared memory...\t");
 
-            // TODO SegFault sempre
-            insert_list(attached_shm_list, request.id, user_key.user_key);
-
-            // ========================================================
+            if(insert_list(attached_shm_list, request.id, user_key.user_key) != 1) {
+                err_exit("\n<Server> insert_list failed");
+            } else {
+                printf("DONE!\n");
+            }
 
             // Shared Memory is now accessible to everyone who wants
             semOp(sem_id, 0, 1);
 
             // =========================================
+
+            printf("Opening FIFOCLIENT...\t\t");
         
             // FIFOCLIENT file descriptor
-            int FIFOCLIENT = open(path_to_client_FIFO, O_WRONLY);
+            int FIFOCLIENT = open(path_to_client_FIFO, O_RDWR);
 
             // Checks if open happened
             if(FIFOCLIENT == -1) {
-                err_exit("<Server> open FIFOCLIENT failed");
+                err_exit("\n<Server> open FIFOCLIENT failed");
+            } else {
+                printf("DONE!\n");
             }
 
             // Write buffer
@@ -243,15 +248,25 @@ int main (int argc, char *argv[]) {
 
             bW -> user_key = user_key.user_key; 
 
-            // Writes the response on the FIFO
-            if(write(FIFOCLIENT, bW, sizeof(bW)) == 0) {
-                err_exit("<Server> write on FIFOSERVER failed");
+            // Writes the response on FIFOCLIENT
+            printf("Writing on FIFOCLIENT...\t");
+
+            if(write(FIFOCLIENT, bW, sizeof(bW)) == sizeof(bW)) {
+                printf("DONE!\n");
+            } else {
+                err_exit("\n<Server> write on FIFOSERVER failed");
             }
 
             // Closes FIFOCLIENT file descriptor
+            printf("Closing FIFOCLIENT...\t\t");
+
             if(close(FIFOCLIENT) == -1) {
-                err_exit("<Server> close failed");
+                err_exit("\n<Server> close failed");
+            } else {
+                printf("DONE!\n");
             }
+
+            printf("\n\n");
         }
         // ============================================
     }
