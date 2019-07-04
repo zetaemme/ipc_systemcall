@@ -51,7 +51,7 @@ int args_size(char *args[]) {
 Node_t *get_node(Node_t *shm_list, char *id, int user_key){
     Node_t *current = shm_list;
 
-    while(current != shm_list + 100){
+    while(current != shm_list + 20){
         if(strcmp(current -> id, id) == 0 && current -> user_key == user_key){
             return current;
         }

@@ -5,7 +5,7 @@ void write_in_shared_memory(Node_t *shm_list, char id[], int user_key) {
     Node_t *current = shm_list;
     int i;
 
-    for(i = 0; i < 100; i++) {
+    for(i = 0; i < 20; i++) {
         if((strcmp(current -> id, "") != 0 && current -> has_been_used == 1) || strcmp(current -> id, "") == 0) {
             break;
         }
